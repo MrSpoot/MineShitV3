@@ -1,51 +1,61 @@
 package com.mineshit.engine.graphics;
 
+import org.lwjgl.system.MemoryUtil;
+
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.system.MemoryUtil.*;
 
 public class Mesh {
-
-    private final int vaoId;
-    private final int vboId;
+    private final int vao;
+    private final int vbo;
+    private final int ebo;
     private final int vertexCount;
 
-    public Mesh(float[] positions) {
-        vertexCount = positions.length / 3;
+    public Mesh(FloatBuffer vertexBuffer, IntBuffer indexBuffer, int vertexSize) {
+        this.vertexCount = indexBuffer.remaining();
 
-        vaoId = glGenVertexArrays();
-        glBindVertexArray(vaoId);
+        vao = glGenVertexArrays();
+        vbo = glGenBuffers();
+        ebo = glGenBuffers();
 
-        vboId = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, vboId);
+        glBindVertexArray(vao);
 
-        FloatBuffer vertexBuffer = memAllocFloat(positions.length);
-        vertexBuffer.put(positions).flip();
-
+        // VBO
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
 
-        glEnableVertexAttribArray(0); // layout(location = 0) dans ton shader
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+        // EBO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBuffer, GL_STATIC_DRAW);
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // Vertex Attributes
+        int stride = vertexSize * Float.BYTES;
+
+        glEnableVertexAttribArray(0); // aPos
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, stride, 0);
+
+        glEnableVertexAttribArray(1); // aUV
+        glVertexAttribPointer(1, 2, GL_FLOAT, false, stride, 3 * Float.BYTES);
+
+        glEnableVertexAttribArray(2); // aTexIndex
+        glVertexAttribPointer(2, 1, GL_FLOAT, false, stride, 5 * Float.BYTES);
+
         glBindVertexArray(0);
-        memFree(vertexBuffer);
     }
 
     public void render() {
-        glBindVertexArray(vaoId);
-        glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+        glBindVertexArray(vao);
+        glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
     }
 
-    public void destroy() {
-        glDisableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glDeleteBuffers(vboId);
-        glBindVertexArray(0);
-        glDeleteVertexArrays(vaoId);
+    public void cleanup() {
+        glDeleteBuffers(vbo);
+        glDeleteBuffers(ebo);
+        glDeleteVertexArrays(vao);
     }
 }

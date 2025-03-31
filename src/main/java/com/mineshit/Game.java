@@ -3,6 +3,7 @@ package com.mineshit;
 import com.mineshit.engine.core.Timer;
 import com.mineshit.engine.graphics.Camera;
 import com.mineshit.engine.graphics.Renderer;
+import com.mineshit.engine.graphics.textures.TextureManager;
 import com.mineshit.engine.input.InputManager;
 import com.mineshit.engine.window.Window;
 import org.joml.Vector3f;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
 
 public class Game {
 
@@ -23,7 +25,6 @@ public class Game {
 
     private Renderer renderer;
     private InputManager input;
-
 
     public void run() {
         init();
@@ -47,6 +48,8 @@ public class Game {
         renderer.init();
 
         input = new InputManager(window.getId());
+
+        TextureManager.init();
 
     }
 
@@ -79,10 +82,14 @@ public class Game {
         float sensitivity = 0.1f;
 
         Vector3f move = new Vector3f();
-        if (input.isKeyDown(GLFW_KEY_W)) move.z -= speed;
-        if (input.isKeyDown(GLFW_KEY_S)) move.z += speed;
+        if(input.isKeyDown(GLFW_KEY_LEFT_SHIFT)) speed *= 2;
+        if (input.isKeyDown(GLFW_KEY_W)) move.z += speed;
+        if (input.isKeyDown(GLFW_KEY_S)) move.z -= speed;
         if (input.isKeyDown(GLFW_KEY_A)) move.x -= speed;
         if (input.isKeyDown(GLFW_KEY_D)) move.x += speed;
+
+        if (input.isKeyDown(GLFW_KEY_P)) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        if (input.isKeyDown(GLFW_KEY_O)) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         camera.moveRelative(move);
 
