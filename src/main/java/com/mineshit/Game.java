@@ -6,6 +6,7 @@ import com.mineshit.engine.graphics.Renderer;
 import com.mineshit.engine.graphics.textures.TextureManager;
 import com.mineshit.engine.input.InputManager;
 import com.mineshit.engine.window.Window;
+import com.mineshit.game.world.World;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,8 @@ public class Game {
 
     private Renderer renderer;
     private InputManager input;
+
+    private World world;
 
     public void run() {
         init();
@@ -50,6 +53,8 @@ public class Game {
         input = new InputManager(window.getId());
 
         TextureManager.init();
+
+        world = new World();
 
     }
 
@@ -94,16 +99,18 @@ public class Game {
         camera.moveRelative(move);
 
         camera.rotate(input.getMouseDeltaX() * sensitivity, input.getMouseDeltaY() * sensitivity);
+
+        world.update(camera.getPosition());
     }
 
 
     private void render(float alpha) {
-        renderer.render(camera,alpha);
+        renderer.render(camera,world,alpha);
     }
 
     private void cleanup() {
         LOGGER.info("Cleaning up");
-        renderer.cleanup();
+        renderer.cleanup(world);
         window.cleanup();
     }
 

@@ -86,7 +86,7 @@ public class ChunkMeshBuilder {
 
         MemoryUtil.memFree(vertexBuffer);
         MemoryUtil.memFree(indexBuffer);
-        
+
         return mesh;
     }
 

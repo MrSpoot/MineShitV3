@@ -1,6 +1,7 @@
 package com.mineshit.game.world;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.joml.Vector3i;
 
 import java.util.ArrayList;
@@ -13,6 +14,9 @@ public class Chunk {
     @Getter
     private final Vector3i position;
 
+    @Getter @Setter
+    private ChunkState state;
+
     private boolean isUniform = true;
     @Getter
     private short uniformBlockId = 0;
@@ -23,6 +27,7 @@ public class Chunk {
 
     public Chunk(Vector3i position) {
         this.position = new Vector3i(position);
+        this.state = ChunkState.EMPTY;
     }
 
     public short getBlock(int x, int y, int z) {
