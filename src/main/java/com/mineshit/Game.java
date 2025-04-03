@@ -110,7 +110,9 @@ public class Game {
 
     private void cleanup() {
         LOGGER.info("Cleaning up");
+        LOGGER.info("Cleanup renderer");
         renderer.cleanup(world);
+        LOGGER.info("Cleanup windows");
         window.cleanup();
     }
 

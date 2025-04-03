@@ -49,9 +49,9 @@ public class World {
 
             if(position.x == 0 && position.z == 0) {
                 c1.setBlock(Chunk.SIZE / 2,Chunk.SIZE - 1,Chunk.SIZE / 2,(short)2);
-                c1.setBlock(Chunk.SIZE / 2 + 1,Chunk.SIZE - 1,Chunk.SIZE / 2,(short)2);
-                c1.setBlock(Chunk.SIZE / 2 + 1,Chunk.SIZE - 1,Chunk.SIZE / 2 + 1,(short)2);
-                c1.setBlock(Chunk.SIZE / 2,Chunk.SIZE - 1,Chunk.SIZE / 2 + 1,(short)2);
+                c1.setBlock(Chunk.SIZE / 2 - 1,Chunk.SIZE - 1,Chunk.SIZE / 2,(short)2);
+                c1.setBlock(Chunk.SIZE / 2 - 1,Chunk.SIZE - 1,Chunk.SIZE / 2 - 1,(short)2);
+                c1.setBlock(Chunk.SIZE / 2,Chunk.SIZE - 1,Chunk.SIZE / 2 - 1,(short)2);
             }
 
             c1.setBlock(0,0,0,(short)2);

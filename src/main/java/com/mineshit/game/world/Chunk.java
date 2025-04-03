@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Chunk {
-    public static final int SIZE = 32;
+    public static final int SIZE = 4;
     public static final int TOTAL_BLOCKS = SIZE * SIZE * SIZE;
 
     @Getter
