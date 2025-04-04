@@ -1,14 +1,23 @@
 package com.mineshit.engine.graphics;
 
 import com.mineshit.engine.graphics.textures.TextureManager;
+import com.mineshit.game.world.Chunk;
 import com.mineshit.game.world.ChunkRenderable;
+import com.mineshit.game.world.ChunkState;
 import com.mineshit.game.world.World;
+import org.joml.Vector3i;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
 
 public class Renderer {
 
     private Shader shader;
+
+    private final Map<Vector3i, ChunkRenderable> renderables = new HashMap<>();
 
     public void init() {
         shader = new Shader("/shaders/basic.glsl");
@@ -24,8 +33,24 @@ public class Renderer {
         shader.setUniform("uProjection", camera.getProjectionMatrix());
         shader.setUniform("uView", camera.getViewMatrix());
 
-        for (ChunkRenderable renderable : world.getRenderables()) {
-            renderable.updateMeshIfNeeded();
+        Iterator<Map.Entry<Vector3i, ChunkRenderable>> it = renderables.entrySet().iterator();
+        while (it.hasNext()) {
+            var entry = it.next();
+            ChunkRenderable renderable = entry.getValue();
+
+            if (renderable.getChunk().getState() == ChunkState.DELETED) {
+                renderable.cleanup();
+                it.remove();
+            }
+        }
+
+        for (Chunk chunk : world.getChunks(ChunkState.GENERATED, ChunkState.DIRTY)) {
+            Vector3i pos = chunk.getPosition();
+            ChunkRenderable renderable = renderables.computeIfAbsent(pos, k -> new ChunkRenderable(chunk));
+            renderable.updateMeshIfNeeded(world);
+        }
+
+        for(ChunkRenderable renderable : renderables.values()) {
             renderable.render(shader);
         }
 
@@ -33,9 +58,9 @@ public class Renderer {
         shader.unbind();
     }
 
-    public void cleanup(World world) {
+    public void cleanup() {
         shader.destroy();
-        for (ChunkRenderable renderable : world.getRenderables()) {
+        for (ChunkRenderable renderable : renderables.values()) {
             renderable.cleanup();
         }
     }

@@ -24,6 +24,8 @@ public class Game {
     private Timer logicTimer;
     private Timer renderTimer;
 
+    private Timer loggingTimer;
+
     private Renderer renderer;
     private InputManager input;
 
@@ -46,6 +48,7 @@ public class Game {
 
         logicTimer = new Timer(60);
         renderTimer = new Timer(240);
+        loggingTimer = new Timer(60);
 
         renderer = new Renderer();
         renderer.init();
@@ -61,6 +64,8 @@ public class Game {
     private void loop() {
         LOGGER.info("Starting game loop");
 
+        int frames = 0;
+
         while (!window.shouldClose()) {
             logicTimer.update();
             renderTimer.update();
@@ -73,17 +78,18 @@ public class Game {
                 float alpha = renderTimer.getAlpha();
                 render(alpha);
                 window.update();
+                frames++;
             }
         }
-
     }
+
 
     private void update(float deltaTime) {
         input.update();
 
         if (input.isKeyDown(GLFW_KEY_ESCAPE)) window.close();
 
-        float speed = 5f * deltaTime;
+        float speed = 25f * deltaTime;
         float sensitivity = 0.1f;
 
         Vector3f move = new Vector3f();
@@ -111,7 +117,7 @@ public class Game {
     private void cleanup() {
         LOGGER.info("Cleaning up");
         LOGGER.info("Cleanup renderer");
-        renderer.cleanup(world);
+        renderer.cleanup();
         LOGGER.info("Cleanup windows");
         window.cleanup();
     }

@@ -5,9 +5,10 @@ import lombok.Getter;
 @Getter
 public enum BlockType {
     AIR(null),
-    GRASS("/textures/grass.png"),
-    DIRT("/textures/dirt.png"),
-    STONE("/textures/stone.png");
+    GRASS("/textures/grass_full.png"),
+    DIRT("/textures/dirt_full.png"),
+    STONE("/textures/stone_full.png"),
+    TEST("/textures/test_full.png");
 
     private final String texturePath;
 

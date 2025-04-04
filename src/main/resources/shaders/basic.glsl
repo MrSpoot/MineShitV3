@@ -31,7 +31,19 @@ in flat float vFaceIndex;
 
 uniform sampler2DArray uTextureArray;
 
+vec2 getFaceUV(vec2 baseUV, int faceIndex) {
+    const float faceCount = 6.0;
+    float tileWidth = 1.0 / faceCount;
+
+    vec2 adjustedUV;
+    adjustedUV.x = baseUV.x * tileWidth + tileWidth * float(faceIndex);
+    adjustedUV.y = baseUV.y;
+
+    return adjustedUV;
+}
+
+
 void main() {
-    FragColor = texture(uTextureArray, vec3(vUV, vTexIndex - 1));
+    FragColor = texture(uTextureArray, vec3(getFaceUV(vUV,int(vFaceIndex)), vTexIndex - 1));
 }
 //@endfs

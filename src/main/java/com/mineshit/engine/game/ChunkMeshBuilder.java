@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Map;
 
 import static org.lwjgl.system.MemoryUtil.memAllocFloat;
 import static org.lwjgl.system.MemoryUtil.memAllocInt;
@@ -24,13 +25,13 @@ public class ChunkMeshBuilder {
             {0f, 1f}
     };
 
-    public static Mesh build(Chunk chunk) {
+    public static Mesh build(Chunk chunk, Map<FaceDirection, Chunk> neighbors) {
         long startTime = System.nanoTime();
         LOGGER.trace("Building Mesh");
 
         int maxFaces = Chunk.SIZE * Chunk.SIZE * Chunk.SIZE * 6;
-        FloatBuffer vertexBuffer = memAllocFloat(maxFaces * 4 * 6); // 4 vertices per face, 6 floats per vertex
-        IntBuffer indexBuffer = memAllocInt(maxFaces * 6); // 6 indices per face
+        FloatBuffer vertexBuffer = memAllocFloat(maxFaces * 4 * 7); // 7 floats per vertex now (added faceId)
+        IntBuffer indexBuffer = memAllocInt(maxFaces * 6);
 
         int indexOffset = 0;
         int vertexCount = 0;
@@ -46,28 +47,47 @@ public class ChunkMeshBuilder {
                         int ny = y + face.getOffsetY();
                         int nz = z + face.getOffsetZ();
 
+                        short neighborBlock = 0;
+
+                        if (chunk.isOutOfBounds(nx, ny, nz)) {
+                            // Vérifie dans le chunk voisin
+                            Chunk neighbor = neighbors.get(face);
+                            if (neighbor != null) {
+                                int ox = (nx + Chunk.SIZE) % Chunk.SIZE;
+                                int oy = (ny + Chunk.SIZE) % Chunk.SIZE;
+                                int oz = (nz + Chunk.SIZE) % Chunk.SIZE;
+                                if (neighbor.isInBounds(ox, oy, oz)) {
+                                    neighborBlock = neighbor.getBlock(ox, oy, oz);
+                                }
+                            }
+                        } else {
+                            neighborBlock = chunk.getBlock(nx, ny, nz);
+                        }
+
+                        if (neighborBlock != 0) continue; // Face cachée : on la skip
+
+                        // Sinon, on génère la face
+                        float[] faceVertices = getFaceVertices(x, y, z, face);
                         int faceId = getFaceId(face);
 
-                        if (chunk.isOutOfBounds(nx, ny, nz) || chunk.getBlock(nx, ny, nz) == 0) {
-                            float[] faceVertices = getFaceVertices(x, y, z, face);
-                            for (int i = 0; i < 4; i++) {
-                                vertexBuffer.put(faceVertices[i * 3]);
-                                vertexBuffer.put(faceVertices[i * 3 + 1]);
-                                vertexBuffer.put(faceVertices[i * 3 + 2]);
-                                vertexBuffer.put(UVS[i][0]);
-                                vertexBuffer.put(UVS[i][1]);
-                                vertexBuffer.put(block);
-                                vertexBuffer.put(faceId);
-                            }
-                            indexBuffer.put(indexOffset);
-                            indexBuffer.put(indexOffset + 1);
-                            indexBuffer.put(indexOffset + 2);
-                            indexBuffer.put(indexOffset + 2);
-                            indexBuffer.put(indexOffset + 3);
-                            indexBuffer.put(indexOffset);
-                            indexOffset += 4;
-                            vertexCount += 4;
+                        for (int i = 0; i < 4; i++) {
+                            vertexBuffer.put(faceVertices[i * 3]);
+                            vertexBuffer.put(faceVertices[i * 3 + 1]);
+                            vertexBuffer.put(faceVertices[i * 3 + 2]);
+                            vertexBuffer.put(UVS[i][0]);
+                            vertexBuffer.put(UVS[i][1]);
+                            vertexBuffer.put(block);
+                            vertexBuffer.put(faceId);
                         }
+
+                        indexBuffer.put(indexOffset);
+                        indexBuffer.put(indexOffset + 1);
+                        indexBuffer.put(indexOffset + 2);
+                        indexBuffer.put(indexOffset + 2);
+                        indexBuffer.put(indexOffset + 3);
+                        indexBuffer.put(indexOffset);
+                        indexOffset += 4;
+                        vertexCount += 4;
                     }
                 }
             }
@@ -85,13 +105,14 @@ public class ChunkMeshBuilder {
                 indexOffset / 2
         );
 
-        Mesh mesh = new Mesh(vertexBuffer, indexBuffer, 7); // 6 floats per vertex
+        Mesh mesh = new Mesh(vertexBuffer, indexBuffer, 7);
 
         MemoryUtil.memFree(vertexBuffer);
         MemoryUtil.memFree(indexBuffer);
 
         return mesh;
     }
+
 
     private static float[] getFaceVertices(int x, int y, int z, FaceDirection face) {
         float fx = x;
@@ -110,11 +131,11 @@ public class ChunkMeshBuilder {
 
     private static int getFaceId(FaceDirection face) {
         return switch (face) {
-            case FRONT  -> 0;
-            case BACK   -> 1;
-            case LEFT   -> 2;
+            case TOP  -> 0;
+            case FRONT   -> 1;
+            case BACK   -> 2;
             case RIGHT  -> 3;
-            case TOP    -> 4;
+            case LEFT    -> 4;
             case BOTTOM -> 5;
         };
     }

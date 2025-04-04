@@ -15,10 +15,10 @@ public class ChunkRenderable {
         this.chunk = chunk;
     }
 
-    public void updateMeshIfNeeded() {
+    public void updateMeshIfNeeded(World world) {
         if (chunk.getState() == ChunkState.GENERATED || chunk.getState() == ChunkState.DIRTY) {
             if (mesh != null) mesh.cleanup();
-            mesh = ChunkMeshBuilder.build(chunk);
+            mesh = ChunkMeshBuilder.build(chunk, world.getNeighborChunks(chunk.getPosition()));
             chunk.setState(ChunkState.MESHED);
         }
     }

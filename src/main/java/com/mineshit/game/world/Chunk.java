@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Chunk {
-    public static final int SIZE = 4;
+    public static final int SIZE = 32;
     public static final int TOTAL_BLOCKS = SIZE * SIZE * SIZE;
 
     @Getter
@@ -80,6 +80,12 @@ public class Chunk {
 
     public boolean isOutOfBounds(int x, int y, int z) {
         return (x < 0 || y < 0 || z < 0 || x >= SIZE || y >= SIZE || z >= SIZE);
+    }
+
+    public boolean isInBounds(int x, int y, int z) {
+        return x >= 0 && x < SIZE &&
+                y >= 0 && y < SIZE &&
+                z >= 0 && z < SIZE;
     }
 
     // --- Internal ---
