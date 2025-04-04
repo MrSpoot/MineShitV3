@@ -46,6 +46,8 @@ public class ChunkMeshBuilder {
                         int ny = y + face.getOffsetY();
                         int nz = z + face.getOffsetZ();
 
+                        int faceId = getFaceId(face);
+
                         if (chunk.isOutOfBounds(nx, ny, nz) || chunk.getBlock(nx, ny, nz) == 0) {
                             float[] faceVertices = getFaceVertices(x, y, z, face);
                             for (int i = 0; i < 4; i++) {
@@ -54,7 +56,8 @@ public class ChunkMeshBuilder {
                                 vertexBuffer.put(faceVertices[i * 3 + 2]);
                                 vertexBuffer.put(UVS[i][0]);
                                 vertexBuffer.put(UVS[i][1]);
-                                vertexBuffer.put((float) block);
+                                vertexBuffer.put(block);
+                                vertexBuffer.put(faceId);
                             }
                             indexBuffer.put(indexOffset);
                             indexBuffer.put(indexOffset + 1);
@@ -82,7 +85,7 @@ public class ChunkMeshBuilder {
                 indexOffset / 2
         );
 
-        Mesh mesh = new Mesh(vertexBuffer, indexBuffer, 6); // 6 floats per vertex
+        Mesh mesh = new Mesh(vertexBuffer, indexBuffer, 7); // 6 floats per vertex
 
         MemoryUtil.memFree(vertexBuffer);
         MemoryUtil.memFree(indexBuffer);
@@ -104,4 +107,16 @@ public class ChunkMeshBuilder {
             case BOTTOM -> new float[]{ fx, fy, fz, fx + 1, fy, fz, fx + 1, fy, fz + 1, fx, fy, fz + 1 };
         };
     }
+
+    private static int getFaceId(FaceDirection face) {
+        return switch (face) {
+            case FRONT  -> 0;
+            case BACK   -> 1;
+            case LEFT   -> 2;
+            case RIGHT  -> 3;
+            case TOP    -> 4;
+            case BOTTOM -> 5;
+        };
+    }
+
 }

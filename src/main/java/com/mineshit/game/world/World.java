@@ -26,11 +26,16 @@ public class World {
     private void generateNewChunk(Vector3f cameraPosition) {
         if (chunks.isEmpty()) {
             for (Vector3i pos : List.of(
-                    new Vector3i(0, 0, 0),
-                    new Vector3i(1, 0, 0),
-                    new Vector3i(0, 0, 1),
-                    new Vector3i(-1, 0, 0),
-                    new Vector3i(0, 0, -1)
+                    new Vector3i(0, -2, 0),
+                    new Vector3i(1, -2, 0),
+                    new Vector3i(0, -2, 1),
+                    new Vector3i(-1, -2, 0),
+                    new Vector3i(0, -2, -1),
+
+                    new Vector3i(-1, -2, -1),
+                    new Vector3i(1, -2, -1),
+                    new Vector3i(1, -2, 1),
+                    new Vector3i(-1, -2, 1)
             )) {
                 Chunk chunk = generateTestChunk(pos);
                 chunks.put(pos, chunk);
@@ -41,23 +46,23 @@ public class World {
 
     private Chunk generateTestChunk(Vector3i position) {
             Chunk c1 = new Chunk(position);
-            c1.fillChunk((short)1);
-            c1.setBlock(0,Chunk.SIZE - 1,0,(short)2);
-            c1.setBlock(Chunk.SIZE - 1,Chunk.SIZE - 1,0,(short)2);
-            c1.setBlock(Chunk.SIZE - 1,Chunk.SIZE - 1,Chunk.SIZE - 1,(short)2);
-            c1.setBlock(0,Chunk.SIZE - 1,Chunk.SIZE - 1,(short)2);
+            c1.fillChunk(BlockType.DIRT);
+            c1.setBlock(0,Chunk.SIZE - 1,0,BlockType.GRASS);
+            c1.setBlock(Chunk.SIZE - 1,Chunk.SIZE - 1,0,BlockType.GRASS);
+            c1.setBlock(Chunk.SIZE - 1,Chunk.SIZE - 1,Chunk.SIZE - 1,BlockType.GRASS);
+            c1.setBlock(0,Chunk.SIZE - 1,Chunk.SIZE - 1,BlockType.GRASS);
 
             if(position.x == 0 && position.z == 0) {
-                c1.setBlock(Chunk.SIZE / 2,Chunk.SIZE - 1,Chunk.SIZE / 2,(short)2);
-                c1.setBlock(Chunk.SIZE / 2 - 1,Chunk.SIZE - 1,Chunk.SIZE / 2,(short)2);
-                c1.setBlock(Chunk.SIZE / 2 - 1,Chunk.SIZE - 1,Chunk.SIZE / 2 - 1,(short)2);
-                c1.setBlock(Chunk.SIZE / 2,Chunk.SIZE - 1,Chunk.SIZE / 2 - 1,(short)2);
+                c1.setBlock(Chunk.SIZE / 2,Chunk.SIZE - 1,Chunk.SIZE / 2,BlockType.STONE);
+                c1.setBlock(Chunk.SIZE / 2 - 1,Chunk.SIZE - 1,Chunk.SIZE / 2,BlockType.STONE);
+                c1.setBlock(Chunk.SIZE / 2 - 1,Chunk.SIZE - 1,Chunk.SIZE / 2 - 1,BlockType.STONE);
+                c1.setBlock(Chunk.SIZE / 2,Chunk.SIZE - 1,Chunk.SIZE / 2 - 1,BlockType.STONE);
             }
 
-            c1.setBlock(0,0,0,(short)2);
-            c1.setBlock(Chunk.SIZE - 1,0,0,(short)2);
-            c1.setBlock(Chunk.SIZE - 1,0,Chunk.SIZE - 1,(short)2);
-            c1.setBlock(0,0,Chunk.SIZE - 1,(short)2);
+            c1.setBlock(0,0,0,BlockType.GRASS);
+            c1.setBlock(Chunk.SIZE - 1,0,0,BlockType.GRASS);
+            c1.setBlock(Chunk.SIZE - 1,0,Chunk.SIZE - 1,BlockType.GRASS);
+            c1.setBlock(0,0,Chunk.SIZE - 1,BlockType.GRASS);
 
             c1.setState(ChunkState.GENERATED);
             return c1;

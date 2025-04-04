@@ -44,6 +44,9 @@ public class Mesh {
         glEnableVertexAttribArray(2); // aTexIndex
         glVertexAttribPointer(2, 1, GL_FLOAT, false, stride, 5 * Float.BYTES);
 
+        glEnableVertexAttribArray(3); // aFaceIndex
+        glVertexAttribPointer(3, 1, GL_FLOAT, false, stride, 6 * Float.BYTES);
+
         glBindVertexArray(0);
     }
 

@@ -14,4 +14,8 @@ public enum BlockType {
     BlockType(String path) {
         this.texturePath = path;
     }
+
+    public short getId() {
+        return (short) this.ordinal();
+    }
 }

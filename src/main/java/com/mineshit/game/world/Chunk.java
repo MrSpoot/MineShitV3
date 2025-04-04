@@ -42,8 +42,10 @@ public class Chunk {
         return palette.get(paletteIndex);
     }
 
-    public void setBlock(int x, int y, int z, short blockId) {
+    public void setBlock(int x, int y, int z, BlockType block) {
         checkBounds(x, y, z);
+
+        short blockId = block.getId();
 
         if (isUniform) {
             if (blockId == uniformBlockId) return;
@@ -64,7 +66,8 @@ public class Chunk {
         writeBlockData(index, paletteIndex, data, bitsPerBlock);
     }
 
-    public void fillChunk(short blockId) {
+    public void fillChunk(BlockType block) {
+        short blockId = block.getId();
         isUniform = true;
         uniformBlockId = blockId;
         palette = null;
