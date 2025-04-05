@@ -14,6 +14,7 @@ public class Camera {
 
     @Getter
     private final float fov;
+    @Getter
     @Setter
     private float aspectRatio;
     private final float near = 0.1f;
@@ -48,8 +49,18 @@ public class Camera {
         position.y += localOffset.y;
     }
 
+    public Vector3f getUp(){
+        Vector3f forward = getForward();
+        Vector3f right = getRight();
+        return new Vector3f(right).cross(forward).normalize();
+    }
 
-    private Vector3f getForward() {
+    public Vector3f getRight() {
+        Vector3f forward = getForward();
+        return new Vector3f(forward).cross(new Vector3f(0, 1, 0)).normalize();
+    }
+
+    public Vector3f getForward() {
         return new Vector3f(
                 (float) (Math.cos(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch))),
                 (float) Math.sin(Math.toRadians(pitch)),

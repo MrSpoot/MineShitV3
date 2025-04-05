@@ -1,6 +1,7 @@
 package com.mineshit.engine.graphics;
 
 import com.mineshit.engine.graphics.textures.TextureManager;
+import com.mineshit.engine.window.Window;
 import com.mineshit.game.world.Chunk;
 import com.mineshit.game.world.ChunkRenderable;
 import com.mineshit.game.world.ChunkState;
@@ -15,54 +16,26 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class Renderer {
 
-    private Shader shader;
-
-    private final Map<Vector3i, ChunkRenderable> renderables = new HashMap<>();
+    private final SkyBoxRenderer skyBoxRenderer = new SkyBoxRenderer();
+    private final ChunkRenderer chunkRenderer = new ChunkRenderer();
 
     public void init() {
-        shader = new Shader("/shaders/basic.glsl");
+        skyBoxRenderer.init();
+        chunkRenderer.init();
     }
 
-    public void render(Camera camera, World world, float alpha) {
+    public void render(Window window, Camera camera, World world, float alpha) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader.useProgram();
-        TextureManager.BLOCK_TEXTURES.bind(0);
+        skyBoxRenderer.render(camera,world,alpha);
+        chunkRenderer.render(camera,world,alpha);
 
-        shader.setUniform("uProjection", camera.getProjectionMatrix());
-        shader.setUniform("uView", camera.getViewMatrix());
-
-        Iterator<Map.Entry<Vector3i, ChunkRenderable>> it = renderables.entrySet().iterator();
-        while (it.hasNext()) {
-            var entry = it.next();
-            ChunkRenderable renderable = entry.getValue();
-
-            if (renderable.getChunk().getState() == ChunkState.DELETED) {
-                renderable.cleanup();
-                it.remove();
-            }
-        }
-
-        for (Chunk chunk : world.getChunks(ChunkState.GENERATED, ChunkState.DIRTY)) {
-            Vector3i pos = chunk.getPosition();
-            ChunkRenderable renderable = renderables.computeIfAbsent(pos, k -> new ChunkRenderable(chunk));
-            renderable.updateMeshIfNeeded(world);
-        }
-
-        for(ChunkRenderable renderable : renderables.values()) {
-            renderable.render(shader);
-        }
-
-        TextureManager.BLOCK_TEXTURES.unbind();
-        shader.unbind();
     }
 
     public void cleanup() {
-        shader.destroy();
-        for (ChunkRenderable renderable : renderables.values()) {
-            renderable.cleanup();
-        }
+        skyBoxRenderer.cleanup();
+        chunkRenderer.cleanup();
     }
 }
 

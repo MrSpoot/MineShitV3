@@ -5,7 +5,7 @@ import com.mineshit.game.world.Chunk;
 public class GenerationEngine {
 
     private static final long SEED = 1;
-    private static final float AMPLITUDE = 50.0f;
+    private static final float AMPLITUDE = 1.0f;
     private static final FastNoiseLite noise = new FastNoiseLite();
 
     static {
@@ -41,5 +41,7 @@ public class GenerationEngine {
                 }
             }
         }
+
+        chunk.setBlock(0,0,0,BlockType.TEST);
     }
 }
