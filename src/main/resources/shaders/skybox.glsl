@@ -16,6 +16,7 @@ void main() {
 uniform vec3 camRight;
 uniform vec3 camUp;
 uniform vec3 camForward;
+uniform float uFov;
 uniform float aspect;
 uniform float timeOfDay;
 
@@ -41,7 +42,18 @@ void main() {
     vec2 p = vUv * 2.0 - 1.0;
     p.x *= aspect;
 
-    vec3 rd = normalize(camForward + p.x * camRight + p.y * camUp);
+    // Projection plane distance en fonction du FOV vertical
+    float z = 1.0 / tan(uFov * 0.5);
+
+    // Direction en espace caméra
+    vec3 rayCam = normalize(vec3(p, z));
+
+    // Transforme en world space
+    vec3 rd = normalize(
+    rayCam.x * camRight +
+    rayCam.y * camUp +
+    rayCam.z * camForward
+    );
 
     float sunAngle = -timeOfDay * 2.0 * 3.14159;
     vec3 sundir = normalize(vec3(cos(sunAngle), sin(sunAngle), 0.0));
@@ -71,7 +83,7 @@ void main() {
     skyColor += 1.0 * vSunColor    * pow(sunDot, 2000.0);
 
     float starNoise = hash(floor(rd * 400.0));
-    float star = smoothstep(0.9993, 1.0, starNoise);
+    float star = smoothstep(0.997, 1.0, starNoise);
 
     float starIntensity = (1.0 - clamp(sunHeight * 4.0, 0.0, 1.0));
 

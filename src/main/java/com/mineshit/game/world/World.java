@@ -2,6 +2,7 @@ package com.mineshit.game.world;
 
 import com.mineshit.engine.utils.FaceDirection;
 import com.mineshit.game.utils.GenerationEngine;
+import lombok.Getter;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.slf4j.Logger;
@@ -15,10 +16,11 @@ import java.util.stream.Collectors;
 
 public class World {
     private static final Logger LOGGER = LoggerFactory.getLogger(World.class);
-    private static final int RENDER_DISTANCE = 8; // Change à ta guise
+    private static final int RENDER_DISTANCE = 8;
+    public static final float CYCLE_DURATION_SECONDS = 20 * 60;
 
-    private final ExecutorService executor = Executors.newFixedThreadPool(4); // 4 threads de génération
-    private final Queue<Chunk> chunksReadyToInsert = new ConcurrentLinkedQueue<>();
+    @Getter
+    private final WorldClock clock = new WorldClock(CYCLE_DURATION_SECONDS,0.5f);
 
     private final Map<Vector3i, Chunk> chunks = new HashMap<>();
 
@@ -45,6 +47,7 @@ public class World {
 
 
     public void update(Vector3f cameraPosition) {
+        cameraPosition = new Vector3f(0,0,0);
         generateNewChunk(cameraPosition);
         removeFarChunks(cameraPosition);
     }

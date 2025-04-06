@@ -98,6 +98,8 @@ public class Game {
         if (input.isKeyDown(GLFW_KEY_S)) move.z -= speed;
         if (input.isKeyDown(GLFW_KEY_A)) move.x -= speed;
         if (input.isKeyDown(GLFW_KEY_D)) move.x += speed;
+        if (input.isKeyDown(GLFW_KEY_SPACE)) move.y += speed;
+        if (input.isKeyDown(GLFW_KEY_LEFT_CONTROL)) move.y -= speed;
 
         if (input.isKeyDown(GLFW_KEY_P)) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         if (input.isKeyDown(GLFW_KEY_O)) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
