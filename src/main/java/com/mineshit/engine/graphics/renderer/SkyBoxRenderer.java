@@ -1,5 +1,6 @@
-package com.mineshit.engine.graphics;
+package com.mineshit.engine.graphics.renderer;
 
+import com.mineshit.engine.graphics.Camera;
 import com.mineshit.game.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,7 @@ public class SkyBoxRenderer {
         vao = glGenVertexArrays();
     }
 
-    public void render(Camera camera,World world, float alpha){
+    public void render(Camera camera, World world, float alpha){
         shader.useProgram();
 
         shader.setUniform("timeOfDay", world.getClock().getWorldTime());

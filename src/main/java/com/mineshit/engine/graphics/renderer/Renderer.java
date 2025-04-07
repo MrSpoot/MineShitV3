@@ -1,16 +1,8 @@
-package com.mineshit.engine.graphics;
+package com.mineshit.engine.graphics.renderer;
 
-import com.mineshit.engine.graphics.textures.TextureManager;
+import com.mineshit.engine.graphics.Camera;
 import com.mineshit.engine.window.Window;
-import com.mineshit.game.world.Chunk;
-import com.mineshit.game.world.ChunkRenderable;
-import com.mineshit.game.world.ChunkState;
 import com.mineshit.game.world.World;
-import org.joml.Vector3i;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
 

@@ -1,9 +1,10 @@
-package com.mineshit.engine.graphics;
+package com.mineshit.engine.graphics.renderer;
 
+import com.mineshit.engine.graphics.Camera;
 import com.mineshit.engine.graphics.textures.TextureManager;
-import com.mineshit.game.world.Chunk;
-import com.mineshit.game.world.ChunkRenderable;
-import com.mineshit.game.world.ChunkState;
+import com.mineshit.game.world.generation.Chunk;
+import com.mineshit.game.world.generation.ChunkRenderable;
+import com.mineshit.game.world.generation.ChunkState;
 import com.mineshit.game.world.World;
 import org.joml.Vector3i;
 import org.slf4j.Logger;
@@ -12,9 +13,6 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
 public class ChunkRenderer {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChunkRenderer.class);
@@ -29,6 +27,8 @@ public class ChunkRenderer {
     }
 
     public void render(Camera camera, World world, float alpha) {
+        world.getInteraction().update(world, camera);
+
         shader.useProgram();
         TextureManager.BLOCK_TEXTURES.bind(0);
 
@@ -48,11 +48,11 @@ public class ChunkRenderer {
 
         for (Chunk chunk : world.getChunks(ChunkState.GENERATED, ChunkState.DIRTY)) {
             Vector3i pos = chunk.getPosition();
-            ChunkRenderable renderable = renderables.computeIfAbsent(pos, k -> new ChunkRenderable(chunk));
-            renderable.updateMeshIfNeeded(world);
+            renderables.putIfAbsent(pos, new ChunkRenderable(chunk));
         }
 
         for(ChunkRenderable renderable : renderables.values()) {
+            renderable.updateMeshIfNeeded(world);
             renderable.render(shader);
         }
 
@@ -65,5 +65,6 @@ public class ChunkRenderer {
         for (ChunkRenderable renderable : renderables.values()) {
             renderable.cleanup();
         }
+        ChunkRenderable.cleanupStatic();
     }
 }

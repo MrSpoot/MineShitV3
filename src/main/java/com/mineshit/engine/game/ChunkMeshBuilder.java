@@ -1,8 +1,8 @@
 package com.mineshit.engine.game;
 
-import com.mineshit.engine.graphics.Mesh;
+import com.mineshit.engine.graphics.renderer.Mesh;
 import com.mineshit.engine.utils.FaceDirection;
-import com.mineshit.game.world.Chunk;
+import com.mineshit.game.world.generation.Chunk;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +25,7 @@ public class ChunkMeshBuilder {
             {0f, 1f}
     };
 
-    public static Mesh build(Chunk chunk, Map<FaceDirection, Chunk> neighbors) {
+    public static ChunkMeshData buildBuffers(Chunk chunk, Map<FaceDirection, Chunk> neighbors) {
         long startTime = System.nanoTime();
         LOGGER.trace("Building Mesh");
 
@@ -50,7 +50,6 @@ public class ChunkMeshBuilder {
                         short neighborBlock = 0;
 
                         if (chunk.isOutOfBounds(nx, ny, nz)) {
-                            // Vérifie dans le chunk voisin
                             Chunk neighbor = neighbors.get(face);
                             if (neighbor != null) {
                                 int ox = (nx + Chunk.SIZE) % Chunk.SIZE;
@@ -105,12 +104,7 @@ public class ChunkMeshBuilder {
                 indexOffset / 2
         );
 
-        Mesh mesh = new Mesh(vertexBuffer, indexBuffer, 7);
-
-        MemoryUtil.memFree(vertexBuffer);
-        MemoryUtil.memFree(indexBuffer);
-
-        return mesh;
+        return new ChunkMeshData(vertexBuffer, indexBuffer, vertexCount);
     }
 
 

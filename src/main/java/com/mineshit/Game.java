@@ -2,7 +2,7 @@ package com.mineshit;
 
 import com.mineshit.engine.core.Timer;
 import com.mineshit.engine.graphics.Camera;
-import com.mineshit.engine.graphics.Renderer;
+import com.mineshit.engine.graphics.renderer.Renderer;
 import com.mineshit.engine.graphics.textures.TextureManager;
 import com.mineshit.engine.input.InputManager;
 import com.mineshit.engine.window.Window;
@@ -118,6 +118,7 @@ public class Game {
 
     private void cleanup() {
         LOGGER.info("Cleaning up");
+        world.cleanup();
         LOGGER.info("Cleanup renderer");
         renderer.cleanup();
         LOGGER.info("Cleanup windows");

@@ -1,4 +1,4 @@
-package com.mineshit.game.world;
+package com.mineshit.game.world.generation;
 
 import lombok.Getter;
 import lombok.Setter;

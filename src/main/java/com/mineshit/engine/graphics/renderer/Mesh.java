@@ -1,6 +1,4 @@
-package com.mineshit.engine.graphics;
-
-import org.lwjgl.system.MemoryUtil;
+package com.mineshit.engine.graphics.renderer;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -51,9 +49,11 @@ public class Mesh {
     }
 
     public void render() {
-        glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
+        if(vertexCount > 0){
+            glBindVertexArray(vao);
+            glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0);
+            glBindVertexArray(0);
+        }
     }
 
     public void cleanup() {

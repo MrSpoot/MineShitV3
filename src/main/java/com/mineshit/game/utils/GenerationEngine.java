@@ -1,11 +1,11 @@
 package com.mineshit.game.utils;
 
-import com.mineshit.game.world.BlockType;
-import com.mineshit.game.world.Chunk;
+import com.mineshit.game.world.generation.BlockType;
+import com.mineshit.game.world.generation.Chunk;
 public class GenerationEngine {
 
     private static final long SEED = 1;
-    private static final float AMPLITUDE = 35.0f;
+    private static final float AMPLITUDE = 15.0f;
     private static final FastNoiseLite noise = new FastNoiseLite();
 
     static {
@@ -22,7 +22,6 @@ public class GenerationEngine {
                 int globalX = chunkGlobalX + x;
                 int globalZ = chunkGlobalZ + z;
 
-                // Calcul de la hauteur en (x,z)
                 float height = noise.GetNoise(globalX * 0.5f, globalZ * 0.5f) * AMPLITUDE;
                 int heightInt = (int) height;
 

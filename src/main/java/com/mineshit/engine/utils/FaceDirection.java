@@ -1,6 +1,7 @@
 package com.mineshit.engine.utils;
 
 import lombok.Getter;
+import org.joml.Vector3f;
 import org.joml.Vector3i;
 
 @Getter
@@ -36,5 +37,24 @@ public enum FaceDirection {
             case BOTTOM -> TOP;
         };
     }
+
+    public static FaceDirection fromHit(Vector3f hitPos, Vector3i blockPos) {
+        float dx = hitPos.x - blockPos.x;
+        float dy = hitPos.y - blockPos.y;
+        float dz = hitPos.z - blockPos.z;
+
+        float absX = Math.abs(dx - 0.5f);
+        float absY = Math.abs(dy - 0.5f);
+        float absZ = Math.abs(dz - 0.5f);
+
+        if (absX > absY && absX > absZ) {
+            return dx > 0.5f ? RIGHT : LEFT;
+        } else if (absY > absX && absY > absZ) {
+            return dy > 0.5f ? TOP : BOTTOM;
+        } else {
+            return dz > 0.5f ? FRONT : BACK;
+        }
+    }
+
 }
 

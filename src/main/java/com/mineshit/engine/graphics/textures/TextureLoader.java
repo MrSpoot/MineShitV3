@@ -1,9 +1,8 @@
 package com.mineshit.engine.graphics.textures;
 
-import com.mineshit.Game;
 import com.mineshit.engine.utils.FileReader;
 import com.mineshit.engine.utils.Image;
-import com.mineshit.game.world.BlockType;
+import com.mineshit.game.world.generation.BlockType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
