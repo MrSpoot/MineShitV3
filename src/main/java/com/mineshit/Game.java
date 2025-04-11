@@ -5,6 +5,7 @@ import com.mineshit.engine.graphics.Camera;
 import com.mineshit.engine.graphics.renderer.Renderer;
 import com.mineshit.engine.graphics.textures.TextureManager;
 import com.mineshit.engine.input.InputManager;
+import com.mineshit.engine.utils.Statistic;
 import com.mineshit.engine.window.Window;
 import com.mineshit.game.world.World;
 import org.joml.Vector3f;
@@ -104,6 +105,8 @@ public class Game {
         camera.moveRelative(move);
 
         camera.rotate(input.getMouseDeltaX() * sensitivity, input.getMouseDeltaY() * sensitivity);
+
+        Statistic.set("Camera Position","X : "+String.format("%.1f",camera.getPosition().x)+" | Y : "+String.format("%.1f",camera.getPosition().y)+" | Z : "+String.format("%.1f",camera.getPosition().z));
 
         world.update(camera.getPosition());
     }

@@ -2,6 +2,7 @@ package com.mineshit.engine.graphics.renderer;
 
 import com.mineshit.engine.graphics.Camera;
 import com.mineshit.engine.utils.Image;
+import com.mineshit.engine.utils.Statistic;
 import com.mineshit.game.world.World;
 import com.mineshit.game.world.interaction.HitResult;
 import org.joml.Matrix4f;
@@ -106,6 +107,8 @@ public class SelectionRenderer {
         shader.setUniform("uTexture", 0);
         
         mesh.render();
+
+        Statistic.increment("Drawcalls");
 
         shader.unbind();
 

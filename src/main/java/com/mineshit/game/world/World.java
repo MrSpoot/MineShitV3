@@ -1,6 +1,7 @@
 package com.mineshit.game.world;
 
 import com.mineshit.engine.utils.FaceDirection;
+import com.mineshit.engine.utils.Statistic;
 import com.mineshit.game.utils.GenerationEngine;
 import com.mineshit.game.world.generation.Chunk;
 import com.mineshit.game.world.generation.ChunkState;
@@ -77,6 +78,7 @@ public class World {
 
     public void update(Vector3f cameraPosition) {
         generation.update(cameraPosition);
+        Statistic.set("Chunk",chunks.size());
     }
 
     public void cleanup(){

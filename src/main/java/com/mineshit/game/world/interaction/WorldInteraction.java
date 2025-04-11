@@ -3,6 +3,7 @@ package com.mineshit.game.world.interaction;
 import com.mineshit.engine.graphics.Camera;
 import com.mineshit.engine.input.InputManager;
 import com.mineshit.engine.utils.FaceDirection;
+import com.mineshit.engine.utils.Statistic;
 import com.mineshit.game.world.World;
 import com.mineshit.game.world.generation.BlockType;
 import com.mineshit.game.world.generation.Chunk;
@@ -20,16 +21,37 @@ public class WorldInteraction {
 
     private static final float RANGE = 10.0f;
 
+    private long lastLeftClickTime = 0;
+    private long lastRightClickTime = 0;
+
+    private static final long CLICK_DELAY_MS = 150; // par exemple 150ms entre deux clics
+
+
     @Getter
     private HitResult hitResult;
 
-    public void update(InputManager input, World world, Camera camera){
+    public void update(InputManager input, World world, Camera camera) {
         hitResult = raycast(world, camera);
 
-        if (input.isMouseKeyDown(GLFW_MOUSE_BUTTON_LEFT)) onLeftClick(world,hitResult);
-        if (input.isMouseKeyDown(GLFW_MOUSE_BUTTON_RIGHT)) onRightClick(world,hitResult);
+        if(hitResult != null && hitResult.blockPos() != null) {
+            Statistic.set("Target Block","X : "+hitResult.blockPos().x+" | Y : "+hitResult.blockPos().y+" | Z : "+hitResult.blockPos().z);
+        }else{
+            Statistic.set("Target Block", "NaN");
+        }
 
+        long currentTime = System.currentTimeMillis();
+
+        if (input.isMouseKeyDown(GLFW_MOUSE_BUTTON_LEFT) && currentTime - lastLeftClickTime >= CLICK_DELAY_MS) {
+            lastLeftClickTime = currentTime;
+            onLeftClick(world, hitResult);
+        }
+
+        if (input.isMouseKeyDown(GLFW_MOUSE_BUTTON_RIGHT) && currentTime - lastRightClickTime >= CLICK_DELAY_MS) {
+            lastRightClickTime = currentTime;
+            onRightClick(world, hitResult);
+        }
     }
+
 
     public static HitResult raycast(World world, Camera camera) {
         Vector3f origin = new Vector3f(camera.getPosition());

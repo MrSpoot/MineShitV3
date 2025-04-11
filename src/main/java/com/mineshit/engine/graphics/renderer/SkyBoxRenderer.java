@@ -1,6 +1,7 @@
 package com.mineshit.engine.graphics.renderer;
 
 import com.mineshit.engine.graphics.Camera;
+import com.mineshit.engine.utils.Statistic;
 import com.mineshit.game.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,8 @@ public class SkyBoxRenderer {
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glBindVertexArray(0);
         glDepthMask(true);
+
+        Statistic.increment("Drawcalls");
 
         shader.unbind();
 

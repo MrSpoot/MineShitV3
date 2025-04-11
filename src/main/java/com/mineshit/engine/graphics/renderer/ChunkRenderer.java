@@ -3,6 +3,7 @@ package com.mineshit.engine.graphics.renderer;
 import com.mineshit.engine.graphics.Camera;
 import com.mineshit.engine.graphics.textures.TextureManager;
 import com.mineshit.engine.input.InputManager;
+import com.mineshit.engine.utils.Statistic;
 import com.mineshit.game.world.generation.Chunk;
 import com.mineshit.game.world.generation.ChunkRenderable;
 import com.mineshit.game.world.generation.ChunkState;
