@@ -1,90 +1,127 @@
 package com.mineshit.game.world.interaction;
 
 import com.mineshit.engine.graphics.Camera;
+import com.mineshit.engine.input.InputManager;
 import com.mineshit.engine.utils.FaceDirection;
 import com.mineshit.game.world.World;
+import com.mineshit.game.world.generation.BlockType;
 import com.mineshit.game.world.generation.Chunk;
+import com.mineshit.game.world.generation.ChunkState;
 import lombok.Getter;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.lwjgl.glfw.GLFW.*;
+
 public class WorldInteraction {
     private static final Logger LOGGER = LoggerFactory.getLogger(WorldInteraction.class);
 
-    private static final float RANGE = 5.0f;
+    private static final float RANGE = 10.0f;
 
     @Getter
-    private HitResult currentTarget;
+    private HitResult hitResult;
 
-    public void update(World world, Camera camera){
-        this.currentTarget = raycast(world, camera);
+    public void update(InputManager input, World world, Camera camera){
+        hitResult = raycast(world, camera);
+
+        if (input.isMouseKeyDown(GLFW_MOUSE_BUTTON_LEFT)) onLeftClick(world,hitResult);
+        if (input.isMouseKeyDown(GLFW_MOUSE_BUTTON_RIGHT)) onRightClick(world,hitResult);
+
     }
 
-    public HitResult raycast(World world, Camera camera) {
-        Vector3f origin = camera.getPosition();
-        Vector3f rayDir = camera.getForward();
+    public static HitResult raycast(World world, Camera camera) {
+        Vector3f origin = new Vector3f(camera.getPosition());
+        Vector3f direction = new Vector3f(camera.getForward()).normalize();
 
-        Vector3i currentBlock = new Vector3i(
-                (int) Math.floor(origin.x),
-                (int) Math.floor(origin.y),
-                (int) Math.floor(origin.z)
+        float step = 0.01f;
+
+        Vector3f currentPos = new Vector3f(origin);
+        Vector3i lastBlock = new Vector3i(
+                (int) Math.floor(currentPos.x),
+                (int) Math.floor(currentPos.y),
+                (int) Math.floor(currentPos.z)
         );
 
-        Vector3i step = new Vector3i(
-                Integer.signum((int) rayDir.x),
-                Integer.signum((int) rayDir.y),
-                Integer.signum((int) rayDir.z)
-        );
+        for (float t = 0; t < RANGE; t += step) {
+            currentPos.fma(step, direction);
 
-        Vector3f deltaDist = new Vector3f(
-                rayDir.x == 0 ? Float.MAX_VALUE : Math.abs(1.0f / rayDir.x),
-                rayDir.y == 0 ? Float.MAX_VALUE : Math.abs(1.0f / rayDir.y),
-                rayDir.z == 0 ? Float.MAX_VALUE : Math.abs(1.0f / rayDir.z)
-        );
+            int x = (int) Math.floor(currentPos.x);
+            int y = (int) Math.floor(currentPos.y);
+            int z = (int) Math.floor(currentPos.z);
+            Vector3i currentBlock = new Vector3i(x, y, z);
 
-        Vector3f rayOriginBlock = new Vector3f(
-                origin.x - (float) Math.floor(origin.x),
-                origin.y - (float) Math.floor(origin.y),
-                origin.z - (float) Math.floor(origin.z)
-        );
+            if (!currentBlock.equals(lastBlock)) {
+                Chunk chunk = world.getChunkAt(currentPos);
+                if (chunk == null) {
+                    lastBlock.set(currentBlock);
+                    continue;
+                }
 
-        Vector3f sideDist = new Vector3f(
-                (step.x > 0 ? (1.0f - rayOriginBlock.x) : rayOriginBlock.x) * deltaDist.x,
-                (step.y > 0 ? (1.0f - rayOriginBlock.y) : rayOriginBlock.y) * deltaDist.y,
-                (step.z > 0 ? (1.0f - rayOriginBlock.z) : rayOriginBlock.z) * deltaDist.z
-        );
+                short block = chunk.getBlockAtWorld(x, y, z);
+                if (block != 0) {
+                    Vector3i delta = new Vector3i(currentBlock).sub(lastBlock);
 
+                    FaceDirection face = null;
+                    for (FaceDirection dir : FaceDirection.values()) {
+                        if (dir.getOffset().equals(delta)) {
+                            face = dir.getOpposite();
+                            break;
+                        }
+                    }
 
-        float t = 0f;
-        FaceDirection lastHit = null;
+                    return new HitResult(currentBlock, face);
+                }
 
-        while (t <= RANGE) {
-            Chunk chunk = world.getChunkAt(new Vector3f(currentBlock));
-            if (chunk != null && chunk.isInBounds((int) (double) currentBlock.x,(int) (double) currentBlock.y,(int) (double) currentBlock.z) && chunk.getBlock((int) (double) currentBlock.x,(int) (double) currentBlock.y,(int) (double) currentBlock.z) != 0) {
-                return new HitResult(new Vector3i((int) (double) currentBlock.x,(int) (double) currentBlock.y,(int) (double) currentBlock.z), lastHit);
-            }
-
-            if (sideDist.x < sideDist.y && sideDist.x < sideDist.z) {
-                currentBlock.x += step.x;
-                t = sideDist.x;
-                sideDist.x += deltaDist.x;
-                lastHit = (step.x > 0) ? FaceDirection.LEFT : FaceDirection.RIGHT;
-            } else if (sideDist.y < sideDist.z) {
-                currentBlock.y += step.y;
-                t = sideDist.y;
-                sideDist.y += deltaDist.y;
-                lastHit = (step.y > 0) ? FaceDirection.BOTTOM : FaceDirection.TOP;
-            } else {
-                currentBlock.z += step.z;
-                t = sideDist.z;
-                sideDist.z += deltaDist.z;
-                lastHit = (step.z > 0) ? FaceDirection.BACK : FaceDirection.FRONT;
+                lastBlock.set(currentBlock);
             }
         }
 
-        return null; // rien touché
+        return null;
     }
+
+
+    private void onLeftClick(World world, HitResult r) {
+        if (r == null) return;
+
+        Vector3i hitBlock = r.blockPos();
+        Chunk chunk = world.getChunkAt(new Vector3f(hitBlock));
+
+        if (chunk != null) {
+            int localX = hitBlock.x - chunk.getPosition().x * Chunk.SIZE;
+            int localY = hitBlock.y - chunk.getPosition().y * Chunk.SIZE;
+            int localZ = hitBlock.z - chunk.getPosition().z * Chunk.SIZE;
+
+            if (chunk.isInBounds(localX, localY, localZ)) {
+                chunk.setBlock(localX, localY, localZ, BlockType.AIR);
+                chunk.setState(ChunkState.DIRTY);
+
+                world.setDirtyNeighborBlock(chunk, localX, localY, localZ);
+            }
+        }
+    }
+
+    private void onRightClick(World world, HitResult r) {
+        if (r == null || r.hitFace() == null) return;
+
+        Vector3i target = new Vector3i(r.blockPos()).add(r.hitFace().getOffset());
+
+        Chunk chunk = world.getChunkAt(new Vector3f(target));
+        if (chunk != null) {
+            int localX = target.x - chunk.getPosition().x * Chunk.SIZE;
+            int localY = target.y - chunk.getPosition().y * Chunk.SIZE;
+            int localZ = target.z - chunk.getPosition().z * Chunk.SIZE;
+
+            if (chunk.isInBounds(localX, localY, localZ)) {
+                chunk.setBlock(localX, localY, localZ, BlockType.TEST);
+                chunk.setState(ChunkState.DIRTY);
+
+                world.setDirtyNeighborBlock(chunk, localX, localY, localZ);
+            }
+        }
+    }
+
+
 
 }

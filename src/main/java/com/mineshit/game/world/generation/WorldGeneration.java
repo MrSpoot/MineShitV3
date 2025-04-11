@@ -18,7 +18,7 @@ public class WorldGeneration {
 
     private static final int RENDER_DISTANCE = 8;
 
-    private final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private final ExecutorService executor = Executors.newFixedThreadPool(1);
     private final Queue<Chunk> generatedChunks = new ConcurrentLinkedQueue<>();
 
     private final Map<Vector3i, Chunk> chunks;
@@ -28,8 +28,8 @@ public class WorldGeneration {
     }
 
     public void update(Vector3f cameraPosition) {
-        generateNewChunks(cameraPosition);
         removeFarChunks(cameraPosition);
+        generateNewChunks(cameraPosition);
         flushGeneratedChunks();
     }
 
@@ -65,13 +65,6 @@ public class WorldGeneration {
                         GenerationEngine.generateChunkData(placeholder);
                         placeholder.setState(ChunkState.GENERATED);
                         generatedChunks.add(placeholder);
-                    });
-
-                    executor.submit(() -> {
-                        Chunk chunk = new Chunk(pos);
-                        GenerationEngine.generateChunkData(chunk);
-                        chunk.setState(ChunkState.GENERATED);
-                        generatedChunks.add(chunk);
                     });
                 }
             }
@@ -110,7 +103,7 @@ public class WorldGeneration {
             for (FaceDirection dir : FaceDirection.values()) {
                 Vector3i neighborPos = new Vector3i(pos).add(dir.getOffset());
                 Chunk neighbor = chunks.get(neighborPos);
-                if (neighbor != null && neighbor.getState() == ChunkState.MESHED) {
+                if (neighbor != null) {
                     neighbor.setState(ChunkState.DIRTY);
                 }
             }

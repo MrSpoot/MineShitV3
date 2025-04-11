@@ -24,8 +24,6 @@ public class Game {
     private Timer logicTimer;
     private Timer renderTimer;
 
-    private Timer loggingTimer;
-
     private Renderer renderer;
     private InputManager input;
 
@@ -48,7 +46,6 @@ public class Game {
 
         logicTimer = new Timer(60);
         renderTimer = new Timer(240);
-        loggingTimer = new Timer(60);
 
         renderer = new Renderer();
         renderer.init();
@@ -89,7 +86,7 @@ public class Game {
 
         if (input.isKeyDown(GLFW_KEY_ESCAPE)) window.close();
 
-        float speed = 25f * deltaTime;
+        float speed = 15f * deltaTime;
         float sensitivity = 0.1f;
 
         Vector3f move = new Vector3f();
@@ -113,7 +110,7 @@ public class Game {
 
 
     private void render(float alpha) {
-        renderer.render(window,camera,world,alpha);
+        renderer.render(window,input,camera,world,alpha);
     }
 
     private void cleanup() {

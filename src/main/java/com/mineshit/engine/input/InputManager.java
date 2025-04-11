@@ -44,4 +44,8 @@ public class InputManager {
     public boolean isKeyDown(int key) {
         return glfwGetKey(windowId, key) == GLFW_PRESS;
     }
+
+    public boolean isMouseKeyDown(int key) {
+        return glfwGetMouseButton(windowId, key) == GLFW_PRESS;
+    }
 }

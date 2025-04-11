@@ -2,6 +2,7 @@ package com.mineshit.engine.game;
 
 import com.mineshit.engine.graphics.renderer.Mesh;
 import com.mineshit.engine.utils.FaceDirection;
+import com.mineshit.game.world.World;
 import com.mineshit.game.world.generation.Chunk;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
@@ -26,7 +27,6 @@ public class ChunkMeshBuilder {
     };
 
     public static ChunkMeshData buildBuffers(Chunk chunk, Map<FaceDirection, Chunk> neighbors) {
-        long startTime = System.nanoTime();
         LOGGER.trace("Building Mesh");
 
         int maxFaces = Chunk.SIZE * Chunk.SIZE * Chunk.SIZE * 6;
@@ -94,15 +94,6 @@ public class ChunkMeshBuilder {
 
         vertexBuffer.flip();
         indexBuffer.flip();
-
-        long endTime = System.nanoTime();
-        double durationMs = (endTime - startTime) / 1_000_000.0;
-
-        LOGGER.trace("ChunkMesh built in {} ms ({} vertices, {} triangles)",
-                String.format("%.2f", durationMs),
-                vertexCount,
-                indexOffset / 2
-        );
 
         return new ChunkMeshData(vertexBuffer, indexBuffer, vertexCount);
     }

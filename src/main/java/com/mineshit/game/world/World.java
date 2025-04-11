@@ -54,6 +54,26 @@ public class World {
         return chunks.get(new Vector3i(chunkX, chunkY, chunkZ));
     }
 
+    public void setDirtyNeighborBlock(Chunk chunk, int localX, int localY, int localZ) {
+        Vector3i chunkPos = chunk.getPosition();
+
+        for (FaceDirection dir : FaceDirection.values()) {
+            int nx = localX + dir.getOffsetX();
+            int ny = localY + dir.getOffsetY();
+            int nz = localZ + dir.getOffsetZ();
+
+            if (chunk.isOutOfBounds(nx, ny, nz)) {
+                Vector3i neighborPos = new Vector3i(chunkPos).add(dir.getOffset());
+                Chunk neighbor = chunks.get(neighborPos);
+
+                if (neighbor != null && neighbor.getState() == ChunkState.MESHED) {
+                    neighbor.setState(ChunkState.DIRTY);
+                }
+            }
+        }
+    }
+
+
 
     public void update(Vector3f cameraPosition) {
         generation.update(cameraPosition);

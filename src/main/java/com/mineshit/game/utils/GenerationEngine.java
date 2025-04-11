@@ -2,10 +2,12 @@ package com.mineshit.game.utils;
 
 import com.mineshit.game.world.generation.BlockType;
 import com.mineshit.game.world.generation.Chunk;
+
 public class GenerationEngine {
 
     private static final long SEED = 1;
-    private static final float AMPLITUDE = 15.0f;
+    private static final float AMPLITUDE = 25.0f;
+    private static final int BASE_HEIGHT = 10;
     private static final FastNoiseLite noise = new FastNoiseLite();
 
     static {
@@ -22,7 +24,7 @@ public class GenerationEngine {
                 int globalX = chunkGlobalX + x;
                 int globalZ = chunkGlobalZ + z;
 
-                float height = noise.GetNoise(globalX * 0.5f, globalZ * 0.5f) * AMPLITUDE;
+                float height = noise.GetNoise(globalX * 0.3f, globalZ * 0.3f) * AMPLITUDE + BASE_HEIGHT;
                 int heightInt = (int) height;
 
                 for (int y = 0; y < Chunk.SIZE; y++) {
@@ -31,7 +33,11 @@ public class GenerationEngine {
                     if (globalY > heightInt) {
                         chunk.setBlock(x, y, z, BlockType.AIR);
                     } else if (globalY == heightInt) {
-                        chunk.setBlock(x, y, z, BlockType.GRASS);
+                        if (globalY < -10) {
+                            chunk.setBlock(x, y, z, BlockType.SAND);
+                        } else {
+                            chunk.setBlock(x, y, z, BlockType.GRASS);
+                        }
                     } else if (globalY >= heightInt - 3) {
                         chunk.setBlock(x, y, z, BlockType.DIRT);
                     } else {

@@ -42,6 +42,23 @@ public class Chunk {
         return palette.get(paletteIndex);
     }
 
+    public short getBlockAtWorld(int worldX, int worldY, int worldZ) {
+        int chunkWorldX = position.x * SIZE;
+        int chunkWorldY = position.y * SIZE;
+        int chunkWorldZ = position.z * SIZE;
+
+        int localX = worldX - chunkWorldX;
+        int localY = worldY - chunkWorldY;
+        int localZ = worldZ - chunkWorldZ;
+
+        if (isOutOfBounds(localX, localY, localZ)) {
+            throw new IndexOutOfBoundsException("World coordinates not in this chunk: " + worldX + ", " + worldY + ", " + worldZ);
+        }
+
+        return getBlock(localX, localY, localZ);
+    }
+
+
     public void setBlock(int x, int y, int z, BlockType block) {
         checkBounds(x, y, z);
 

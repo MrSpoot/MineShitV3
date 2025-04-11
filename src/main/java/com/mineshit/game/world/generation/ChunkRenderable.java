@@ -18,7 +18,7 @@ import java.util.concurrent.Future;
 public class ChunkRenderable {
 
     private static final ExecutorService meshingExecutor = Executors.newFixedThreadPool(
-            2
+            1
     );
 
     private Future<ChunkMeshData> pendingMesh = null;
@@ -43,12 +43,16 @@ public class ChunkRenderable {
             try {
                 ChunkMeshData data = pendingMesh.get();
 
-                this.mesh = new Mesh(data.vertexBuffer(), data.indexBuffer(), 7);
+                if(data.canBeAdd()){
+                    this.mesh = new Mesh(data.vertexBuffer(), data.indexBuffer(), 7);
+                }
 
                 MemoryUtil.memFree(data.vertexBuffer());
                 MemoryUtil.memFree(data.indexBuffer());
 
-                chunk.setState(ChunkState.MESHED);
+                if(chunk.getState() != ChunkState.DIRTY) {
+                    chunk.setState(ChunkState.MESHED);
+                }
 
             } catch (Exception e) {
                 chunk.setState(ChunkState.DIRTY);
@@ -72,6 +76,7 @@ public class ChunkRenderable {
 
     public void cleanup() {
         if (mesh != null) mesh.cleanup();
+        if(pendingMesh != null) pendingMesh.cancel(true);
     }
 
     public static void cleanupStatic(){

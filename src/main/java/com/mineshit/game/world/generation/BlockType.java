@@ -8,6 +8,7 @@ public enum BlockType {
     GRASS("/textures/grass_full.png"),
     DIRT("/textures/dirt_full.png"),
     STONE("/textures/stone_full.png"),
+    SAND("/textures/sand_full.png"),
     TEST("/textures/test_full.png");
 
     private final String texturePath;
