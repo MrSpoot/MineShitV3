@@ -19,12 +19,12 @@ import static org.lwjgl.glfw.GLFW.*;
 public class WorldInteraction {
     private static final Logger LOGGER = LoggerFactory.getLogger(WorldInteraction.class);
 
-    private static final float RANGE = 10.0f;
+    private static final float RANGE = 5.0f;
 
     private long lastLeftClickTime = 0;
     private long lastRightClickTime = 0;
 
-    private static final long CLICK_DELAY_MS = 150; // par exemple 150ms entre deux clics
+    private static final long CLICK_DELAY_MS = 200; // par exemple 150ms entre deux clics
 
 
     @Getter

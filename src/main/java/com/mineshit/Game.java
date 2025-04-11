@@ -7,6 +7,7 @@ import com.mineshit.engine.graphics.textures.TextureManager;
 import com.mineshit.engine.input.InputManager;
 import com.mineshit.engine.utils.Statistic;
 import com.mineshit.engine.window.Window;
+import com.mineshit.game.player.PlayerController;
 import com.mineshit.game.world.World;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
@@ -27,6 +28,8 @@ public class Game {
 
     private Renderer renderer;
     private InputManager input;
+
+    private PlayerController playerController;
 
     private World world;
 
@@ -50,6 +53,8 @@ public class Game {
 
         renderer = new Renderer();
         renderer.init();
+
+        playerController = new PlayerController();
 
         input = new InputManager(window.getId());
 
@@ -85,26 +90,13 @@ public class Game {
     private void update(float deltaTime) {
         input.update();
 
+        playerController.update(input,camera,world,deltaTime);
+
         if (input.isKeyDown(GLFW_KEY_ESCAPE)) window.close();
-
-        float speed = 15f * deltaTime;
-        float sensitivity = 0.1f;
-
-        Vector3f move = new Vector3f();
-        if(input.isKeyDown(GLFW_KEY_LEFT_SHIFT)) speed *= 2;
-        if (input.isKeyDown(GLFW_KEY_W)) move.z += speed;
-        if (input.isKeyDown(GLFW_KEY_S)) move.z -= speed;
-        if (input.isKeyDown(GLFW_KEY_A)) move.x -= speed;
-        if (input.isKeyDown(GLFW_KEY_D)) move.x += speed;
-        if (input.isKeyDown(GLFW_KEY_SPACE)) move.y += speed;
-        if (input.isKeyDown(GLFW_KEY_LEFT_CONTROL)) move.y -= speed;
 
         if (input.isKeyDown(GLFW_KEY_P)) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         if (input.isKeyDown(GLFW_KEY_O)) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        camera.moveRelative(move);
-
-        camera.rotate(input.getMouseDeltaX() * sensitivity, input.getMouseDeltaY() * sensitivity);
 
         Statistic.set("Camera Position","X : "+String.format("%.1f",camera.getPosition().x)+" | Y : "+String.format("%.1f",camera.getPosition().y)+" | Z : "+String.format("%.1f",camera.getPosition().z));
 

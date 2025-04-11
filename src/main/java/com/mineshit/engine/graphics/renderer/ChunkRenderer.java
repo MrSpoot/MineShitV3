@@ -70,7 +70,7 @@ public class ChunkRenderer {
         }
 
         for (ChunkRenderable renderable : renderables.values()) {
-            renderable.render(shader);
+            renderable.render(world,shader);
         }
 
         TextureManager.BLOCK_TEXTURES.unbind();

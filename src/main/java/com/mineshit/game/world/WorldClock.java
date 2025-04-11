@@ -1,7 +1,9 @@
 package com.mineshit.game.world;
 
+import com.mineshit.engine.utils.Statistic;
 import lombok.Getter;
 import lombok.Setter;
+import org.joml.Vector3f;
 
 public class WorldClock {
 
@@ -42,7 +44,15 @@ public class WorldClock {
         long now = System.currentTimeMillis();
         float elapsed = (now - lastUpdateMillis) / 1000f;
         float time = startTimeOffset + (elapsed * speed / cycleDurationSeconds);
+
+        Statistic.set("World Time", time);
+
         return time - (float)Math.floor(time); // garde entre 0-1
+    }
+
+    public Vector3f getSunDirection() {
+        float angle = -getWorldTime() * 2.0f * (float)Math.PI;
+        return new Vector3f((float)Math.cos(angle), (float)Math.sin(angle), 0.0f).normalize();
     }
 
     public void reset() {

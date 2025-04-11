@@ -30,6 +30,7 @@ in flat float vTexIndex;
 in flat float vFaceIndex;
 
 uniform sampler2DArray uTextureArray;
+uniform vec3 uSunDir;
 
 vec2 getFaceUV(vec2 baseUV, int faceIndex) {
     const float faceCount = 6.0;
@@ -42,8 +43,22 @@ vec2 getFaceUV(vec2 baseUV, int faceIndex) {
     return adjustedUV;
 }
 
+vec3 getFaceNormal(int faceIndex) {
+    return vec3[6](
+    vec3(0, 1, 0),   // TOP
+    vec3(0, 0, 1),   // FRONT
+    vec3(0, 0, -1),  // BACK
+    vec3(1, 0, 0),   // RIGHT
+    vec3(-1, 0, 0),  // LEFT
+    vec3(0, -1, 0)   // BOTTOM
+    )[faceIndex];
+}
 
 void main() {
-    FragColor = texture(uTextureArray, vec3(getFaceUV(vUV,int(vFaceIndex)), vTexIndex - 1));
+    vec3 normal = getFaceNormal(int(vFaceIndex));
+    float brightness = max(dot(normalize(normal), normalize(uSunDir)), 0.7); // 0.2 = minimum lumière
+
+    vec4 texColor = texture(uTextureArray, vec3(getFaceUV(vUV, int(vFaceIndex)), vTexIndex - 1));
+    FragColor = vec4(texColor.rgb * brightness, texColor.a);
 }
 //@endfs

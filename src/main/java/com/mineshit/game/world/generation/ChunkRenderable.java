@@ -63,7 +63,7 @@ public class ChunkRenderable {
         }
     }
 
-    public void render(Shader shader) {
+    public void render(World world,Shader shader) {
         if (mesh == null) return;
 
         Matrix4f model = new Matrix4f().translate(
@@ -71,6 +71,7 @@ public class ChunkRenderable {
                 chunk.getPosition().y * Chunk.SIZE,
                 chunk.getPosition().z * Chunk.SIZE
         );
+        shader.setUniform("uSunDir",world.getClock().getSunDirection());
         shader.setUniform("uModel", model);
         mesh.render();
 
