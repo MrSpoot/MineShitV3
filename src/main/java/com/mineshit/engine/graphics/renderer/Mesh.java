@@ -1,5 +1,7 @@
 package com.mineshit.engine.graphics.renderer;
 
+import com.mineshit.engine.utils.Statistic;
+
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -53,6 +55,7 @@ public class Mesh {
             glBindVertexArray(vao);
             glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0);
             glBindVertexArray(0);
+            Statistic.increment("Drawcalls");
         }
     }
 

@@ -6,6 +6,7 @@ public enum ChunkState {
     MESHING,
     MESHED,        // Mesh à jour
     DIRTY,          // Les données ont changé, il faut re-mesher
+    DIRTY_NOW,
     DELETED
 }
 

@@ -1,6 +1,7 @@
 package com.mineshit.engine.input;
 
 import lombok.Getter;
+import org.lwjgl.glfw.GLFWScrollCallback;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -15,8 +16,16 @@ public class InputManager {
     @Getter
     private float mouseDeltaX, mouseDeltaY;
 
+    private final GLFWScrollCallback scrollCallback;
+
+    private double scrollOffsetY = 0;
+
     public InputManager(long windowId) {
         this.windowId = windowId;
+
+        scrollCallback = glfwSetScrollCallback(windowId, (window, xoffset, yoffset) -> {
+            scrollOffsetY += yoffset;
+        });
     }
 
     public void update() {
@@ -35,7 +44,7 @@ public class InputManager {
         }
 
         mouseDeltaX = (float) (mouseX - lastMouseX);
-        mouseDeltaY = (float) (lastMouseY - mouseY); // inversé : haut = positif
+        mouseDeltaY = (float) (lastMouseY - mouseY);
 
         lastMouseX = mouseX;
         lastMouseY = mouseY;
@@ -48,4 +57,15 @@ public class InputManager {
     public boolean isMouseKeyDown(int key) {
         return glfwGetMouseButton(windowId, key) == GLFW_PRESS;
     }
+
+    public int getMouseScroll() {
+        int scroll = (int) scrollOffsetY;
+        scrollOffsetY -= scroll; // Réinitialise le scroll utilisé
+        return scroll;
+    }
+
+    public void cleanup(){
+        if (scrollCallback != null) scrollCallback.close();
+    }
+
 }

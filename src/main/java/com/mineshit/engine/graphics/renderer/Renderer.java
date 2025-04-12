@@ -4,6 +4,7 @@ import com.mineshit.engine.graphics.Camera;
 import com.mineshit.engine.input.InputManager;
 import com.mineshit.engine.utils.Statistic;
 import com.mineshit.engine.window.Window;
+import com.mineshit.game.player.PlayerController;
 import com.mineshit.game.world.World;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -22,12 +23,12 @@ public class Renderer {
         interfaceRenderer.init();
     }
 
-    public void render(Window window, InputManager input, Camera camera, World world, float alpha) {
+    public void render(Window window, PlayerController playerController, InputManager input, Camera camera, World world, float alpha) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         skyBoxRenderer.render(camera,world,alpha);
-        chunkRenderer.render(input, camera,world,alpha);
+        chunkRenderer.render(input, playerController, camera,world,alpha);
         selectionRenderer.render(camera,world,alpha);
         interfaceRenderer.render(window);
 

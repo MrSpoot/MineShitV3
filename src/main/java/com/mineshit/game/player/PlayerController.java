@@ -74,27 +74,30 @@ public class PlayerController {
         Vector3f horizontal = new Vector3f(vertical);
         horizontal.fma(deltaTime, new Vector3f(velocity.x, 0, velocity.z));
 
-        if (!collides(world, horizontal)) {
+        float density = getDensityAt(world, horizontal);
+        if (density >= 1.0f) {
+            // Bloc solide, on vérifie les axes séparément
+            Vector3f testX = new Vector3f(vertical).fma(deltaTime, new Vector3f(velocity.x, 0, 0));
+            if (getDensityAt(world, testX) < 1.0f) {
+                position.set(testX);
+                return;
+            }
+
+            Vector3f testZ = new Vector3f(vertical).fma(deltaTime, new Vector3f(0, 0, velocity.z));
+            if (getDensityAt(world, testZ) < 1.0f) {
+                position.set(testZ);
+                return;
+            }
+
+            position.set(vertical);
+        } else {
+            // Pas totalement bloqué : on ralentit
+            float slowFactor = 1.0f - density; // ex: densité = 0.3 → 70% de vitesse
+            horizontal.sub(vertical).mul(slowFactor).add(vertical); // interpolation ralentie
             position.set(horizontal);
-            return;
         }
-
-        Vector3f testX = new Vector3f(vertical);
-        testX.fma(deltaTime, new Vector3f(velocity.x, 0, 0));
-        if (!collides(world, testX)) {
-            position.set(testX);
-            return;
-        }
-
-        Vector3f testZ = new Vector3f(vertical);
-        testZ.fma(deltaTime, new Vector3f(0, 0, velocity.z));
-        if (!collides(world, testZ)) {
-            position.set(testZ);
-            return;
-        }
-
-        position.set(vertical);
     }
+
 
 
     private void moveAxis(World world, Vector3f nextPos, int axis) {
@@ -102,22 +105,32 @@ public class PlayerController {
         Vector3f testPos = new Vector3f(nextPos);
         testPos.setComponent(axis, value);
 
-        if (collides(world, testPos)) {
+        float density = getDensityAt(world, testPos);
+        if (density >= 1.0f) {
+            // Collision solide
             nextPos.setComponent(axis, position.get(axis));
+
             if (axis == 1 && velocity.y < 0) {
                 onGround = true;
                 velocity.y = 0;
             }
+        } else if (density > 0.0f) {
+            // Traversable mais ralentit (optionnel ici)
+            float slow = 1.0f - density;
+            float original = nextPos.get(axis);
+            float interpolated = position.get(axis) + (original - position.get(axis)) * slow;
+            nextPos.setComponent(axis, interpolated);
         }
     }
 
 
-    private boolean collides(World world, Vector3f pos) {
+
+    private float getDensityAt(World world, Vector3f pos) {
         float eye = PLAYER_HEIGHT;
-        boolean collided = false;
+        float maxDensity = 0.0f;
 
         for (float x = -PLAYER_RADIUS + 0.05f; x <= PLAYER_RADIUS - 0.05f; x += 0.4f)
-            for (float y = 0.1f; y <= eye; y += 0.9f)
+            for (float y = 0.1f; y <= eye; y += 0.4f)
                 for (float z = -PLAYER_RADIUS + 0.05f; z <= PLAYER_RADIUS - 0.05f; z += 0.4f) {
                     Vector3f sample = new Vector3f(pos).add(x, y, z);
                     Chunk chunk = world.getChunkAt(sample);
@@ -125,15 +138,34 @@ public class PlayerController {
                         int bx = (int) Math.floor(sample.x);
                         int by = (int) Math.floor(sample.y);
                         int bz = (int) Math.floor(sample.z);
-                        short block = chunk.getBlockAtWorld(bx, by, bz);
+                        short id = chunk.getBlockAtWorld(bx, by, bz);
 
-                        if (block != 0) {
-                            collided = true;
+                        if (id != 0) {
+                            float density = com.mineshit.game.world.generation.BlockType.fromId(id).getDensity();
+                            maxDensity = Math.max(maxDensity, density);
                         }
                     }
                 }
 
-        return collided;
+        return maxDensity;
+    }
+
+
+    public boolean isOccupying(Vector3i blockPos) {
+        float minX = position.x - PLAYER_RADIUS;
+        float maxX = position.x + PLAYER_RADIUS;
+        float minY = position.y;
+        float maxY = position.y + PLAYER_HEIGHT;
+        float minZ = position.z - PLAYER_RADIUS;
+        float maxZ = position.z + PLAYER_RADIUS;
+
+        int bx = blockPos.x;
+        int by = blockPos.y;
+        int bz = blockPos.z;
+
+        return bx + 1 > minX && bx < maxX &&
+                by + 1 > minY && by < maxY &&
+                bz + 1 > minZ && bz < maxZ;
     }
 
 

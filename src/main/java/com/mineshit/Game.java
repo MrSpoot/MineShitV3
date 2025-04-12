@@ -33,6 +33,10 @@ public class Game {
 
     private World world;
 
+    private int frameCount = 0;
+    private double lastFpsTime = 0;
+
+
     public void run() {
         init();
         loop();
@@ -67,8 +71,6 @@ public class Game {
     private void loop() {
         LOGGER.info("Starting game loop");
 
-        int frames = 0;
-
         while (!window.shouldClose()) {
             logicTimer.update();
             renderTimer.update();
@@ -81,7 +83,14 @@ public class Game {
                 float alpha = renderTimer.getAlpha();
                 render(alpha);
                 window.update();
-                frames++;
+                frameCount++;
+
+                double currentTime = glfwGetTime();
+                if (currentTime - lastFpsTime >= 1.0) {
+                    Statistic.set("FPS", frameCount);
+                    frameCount = 0;
+                    lastFpsTime = currentTime;
+                }
             }
         }
     }
@@ -105,7 +114,7 @@ public class Game {
 
 
     private void render(float alpha) {
-        renderer.render(window,input,camera,world,alpha);
+        renderer.render(window,playerController, input,camera,world,alpha);
     }
 
     private void cleanup() {

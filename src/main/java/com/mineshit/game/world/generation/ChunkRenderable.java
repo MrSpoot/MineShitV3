@@ -26,7 +26,8 @@ public class ChunkRenderable {
 
     @Getter
     private final Chunk chunk;
-    private Mesh mesh;
+    private Mesh opaqueMesh;
+    private Mesh transparentMesh;
 
     public ChunkRenderable(Chunk chunk) {
         this.chunk = chunk;
@@ -44,12 +45,15 @@ public class ChunkRenderable {
             try {
                 ChunkMeshData data = pendingMesh.get();
 
-                if(data.canBeAdd()){
-                    this.mesh = new Mesh(data.vertexBuffer(), data.indexBuffer(), 7);
-                }
+                this.opaqueMesh = new Mesh(data.opaqueVertexBuffer(), data.opaqueIndexBuffer(), 7);
+                this.transparentMesh = new Mesh(data.transparentVertexBuffer(), data.transparentIndexBuffer(), 7);
 
-                MemoryUtil.memFree(data.vertexBuffer());
-                MemoryUtil.memFree(data.indexBuffer());
+
+                MemoryUtil.memFree(data.opaqueVertexBuffer());
+                MemoryUtil.memFree(data.opaqueIndexBuffer());
+
+                MemoryUtil.memFree(data.transparentVertexBuffer());
+                MemoryUtil.memFree(data.transparentIndexBuffer());
 
                 if(chunk.getState() != ChunkState.DIRTY) {
                     chunk.setState(ChunkState.MESHED);
@@ -63,23 +67,65 @@ public class ChunkRenderable {
         }
     }
 
-    public void render(World world,Shader shader) {
-        if (mesh == null) return;
+    public void forceRebuild(World world) {
+        if (pendingMesh != null && !pendingMesh.isDone()) {
+            pendingMesh.cancel(true);
+        }
+
+        chunk.setState(ChunkState.MESHING);
+
+        Map<FaceDirection, Chunk> neighbors = world.getNeighborChunks(chunk.getPosition());
+        ChunkMeshData data = ChunkMeshBuilder.buildBuffers(chunk, neighbors);
+
+        if (data.canBeAdd()) {
+            if (opaqueMesh != null) opaqueMesh.cleanup();
+            this.opaqueMesh = new Mesh(data.opaqueVertexBuffer(), data.opaqueIndexBuffer(), 7);
+            if (transparentMesh != null) transparentMesh.cleanup();
+            this.transparentMesh = new Mesh(data.transparentVertexBuffer(), data.transparentIndexBuffer(), 7);
+        }
+
+        MemoryUtil.memFree(data.opaqueVertexBuffer());
+        MemoryUtil.memFree(data.opaqueIndexBuffer());
+        MemoryUtil.memFree(data.transparentVertexBuffer());
+        MemoryUtil.memFree(data.transparentIndexBuffer());
+
+        chunk.setState(ChunkState.MESHED);
+    }
+
+
+    public void renderOpaque(World world, Shader shader) {
+        if (opaqueMesh == null) return;
 
         Matrix4f model = new Matrix4f().translate(
                 chunk.getPosition().x * Chunk.SIZE,
                 chunk.getPosition().y * Chunk.SIZE,
                 chunk.getPosition().z * Chunk.SIZE
         );
-        shader.setUniform("uSunDir",world.getClock().getSunDirection());
+        shader.setUniform("uSunDir", world.getClock().getSunDirection());
         shader.setUniform("uModel", model);
-        mesh.render();
+        opaqueMesh.render();
+    }
 
-        Statistic.increment("Drawcalls");
+    public void renderTransparent(World world, Shader shader) {
+        if (transparentMesh == null) return;
+
+        Matrix4f model = new Matrix4f().translate(
+                chunk.getPosition().x * Chunk.SIZE,
+                chunk.getPosition().y * Chunk.SIZE,
+                chunk.getPosition().z * Chunk.SIZE
+        );
+        shader.setUniform("uSunDir", world.getClock().getSunDirection());
+        shader.setUniform("uModel", model);
+        transparentMesh.render();
+    }
+
+    public boolean hasTransparent(){
+        return transparentMesh != null;
     }
 
     public void cleanup() {
-        if (mesh != null) mesh.cleanup();
+        if (opaqueMesh != null) opaqueMesh.cleanup();
+        if (transparentMesh != null) transparentMesh.cleanup();
         if(pendingMesh != null) pendingMesh.cancel(true);
     }
 

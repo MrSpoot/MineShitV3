@@ -8,6 +8,7 @@ public class GenerationEngine {
     private static final long SEED = 1;
     private static final float AMPLITUDE = 25.0f;
     private static final int BASE_HEIGHT = 10;
+    private static final int WATER_LEVEL = -11;
     private static final FastNoiseLite noise = new FastNoiseLite();
 
     static {
@@ -30,8 +31,10 @@ public class GenerationEngine {
                 for (int y = 0; y < Chunk.SIZE; y++) {
                     int globalY = chunkGlobalY + y;
 
-                    if (globalY > heightInt) {
+                    if (globalY > Math.max(heightInt, WATER_LEVEL)) {
                         chunk.setBlock(x, y, z, BlockType.AIR);
+                    } else if (globalY > heightInt && globalY <= WATER_LEVEL) {
+                        chunk.setBlock(x, y, z, BlockType.WATER);
                     } else if (globalY == heightInt) {
                         if (globalY < -10) {
                             chunk.setBlock(x, y, z, BlockType.SAND);

@@ -3,6 +3,7 @@ package com.mineshit.engine.game;
 import com.mineshit.engine.graphics.renderer.Mesh;
 import com.mineshit.engine.utils.FaceDirection;
 import com.mineshit.game.world.World;
+import com.mineshit.game.world.generation.BlockType;
 import com.mineshit.game.world.generation.Chunk;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
@@ -30,11 +31,17 @@ public class ChunkMeshBuilder {
         LOGGER.trace("Building Mesh");
 
         int maxFaces = Chunk.SIZE * Chunk.SIZE * Chunk.SIZE * 6;
-        FloatBuffer vertexBuffer = memAllocFloat(maxFaces * 4 * 7); // 7 floats per vertex now (added faceId)
-        IntBuffer indexBuffer = memAllocInt(maxFaces * 6);
+        FloatBuffer opaqueVertexBuffer = memAllocFloat(maxFaces * 4 * 7); // 7 floats per vertex now (added faceId)
+        IntBuffer opaqueIndexBuffer = memAllocInt(maxFaces * 6);
 
-        int indexOffset = 0;
-        int vertexCount = 0;
+        FloatBuffer transparentVertexBuffer = memAllocFloat(maxFaces * 4 * 7); // 7 floats per vertex now (added faceId)
+        IntBuffer transparentIndexBuffer = memAllocInt(maxFaces * 6);
+
+        int opaqueIndexOffset = 0;
+        int opaqueVertexCount = 0;
+
+        int transparentIndexOffset = 0;
+        int transparentVertexCount = 0;
 
         for (int x = 0; x < Chunk.SIZE; x++) {
             for (int y = 0; y < Chunk.SIZE; y++) {
@@ -42,62 +49,126 @@ public class ChunkMeshBuilder {
                     short block = chunk.getBlock(x, y, z);
                     if (block == 0) continue;
 
-                    for (FaceDirection face : FaceDirection.values()) {
-                        int nx = x + face.getOffsetX();
-                        int ny = y + face.getOffsetY();
-                        int nz = z + face.getOffsetZ();
+                    BlockType blockType = BlockType.fromId(block);
 
-                        short neighborBlock = 0;
+                    if(blockType.isTransparent()){
+                        for (FaceDirection face : FaceDirection.values()) {
+                            int nx = x + face.getOffsetX();
+                            int ny = y + face.getOffsetY();
+                            int nz = z + face.getOffsetZ();
 
-                        if (chunk.isOutOfBounds(nx, ny, nz)) {
-                            Chunk neighbor = neighbors.get(face);
-                            if (neighbor != null) {
-                                int ox = (nx + Chunk.SIZE) % Chunk.SIZE;
-                                int oy = (ny + Chunk.SIZE) % Chunk.SIZE;
-                                int oz = (nz + Chunk.SIZE) % Chunk.SIZE;
-                                if (neighbor.isInBounds(ox, oy, oz)) {
-                                    neighborBlock = neighbor.getBlock(ox, oy, oz);
+                            short neighborBlock = 0;
+
+                            if (chunk.isOutOfBounds(nx, ny, nz)) {
+                                Chunk neighbor = neighbors.get(face);
+                                if (neighbor != null) {
+                                    int ox = (nx + Chunk.SIZE) % Chunk.SIZE;
+                                    int oy = (ny + Chunk.SIZE) % Chunk.SIZE;
+                                    int oz = (nz + Chunk.SIZE) % Chunk.SIZE;
+                                    if (neighbor.isInBounds(ox, oy, oz)) {
+                                        neighborBlock = neighbor.getBlock(ox, oy, oz);
+                                    }
                                 }
+                            } else {
+                                neighborBlock = chunk.getBlock(nx, ny, nz);
                             }
-                        } else {
-                            neighborBlock = chunk.getBlock(nx, ny, nz);
+
+                            BlockType neighborBlockType = BlockType.fromId(neighborBlock);
+
+                            if (shouldCullFace(blockType,neighborBlockType)) continue;
+
+                            float[] faceVertices = getFaceVertices(x, y, z, face);
+                            int faceId = getFaceId(face);
+
+                            for (int i = 0; i < 4; i++) {
+                                transparentVertexBuffer.put(faceVertices[i * 3]);
+                                transparentVertexBuffer.put(faceVertices[i * 3 + 1]);
+                                transparentVertexBuffer.put(faceVertices[i * 3 + 2]);
+                                transparentVertexBuffer.put(UVS[i][0]);
+                                transparentVertexBuffer.put(UVS[i][1]);
+                                transparentVertexBuffer.put(block);
+                                transparentVertexBuffer.put(faceId);
+                            }
+
+                            transparentIndexBuffer.put(transparentIndexOffset);
+                            transparentIndexBuffer.put(transparentIndexOffset + 1);
+                            transparentIndexBuffer.put(transparentIndexOffset + 2);
+                            transparentIndexBuffer.put(transparentIndexOffset + 2);
+                            transparentIndexBuffer.put(transparentIndexOffset + 3);
+                            transparentIndexBuffer.put(transparentIndexOffset);
+                            transparentIndexOffset += 4;
+                            transparentVertexCount += 4;
                         }
+                    }else{
+                        for (FaceDirection face : FaceDirection.values()) {
+                            int nx = x + face.getOffsetX();
+                            int ny = y + face.getOffsetY();
+                            int nz = z + face.getOffsetZ();
 
-                        if (neighborBlock != 0) continue; // Face cachée : on la skip
+                            short neighborBlock = 0;
 
-                        // Sinon, on génère la face
-                        float[] faceVertices = getFaceVertices(x, y, z, face);
-                        int faceId = getFaceId(face);
+                            if (chunk.isOutOfBounds(nx, ny, nz)) {
+                                Chunk neighbor = neighbors.get(face);
+                                if (neighbor != null) {
+                                    int ox = (nx + Chunk.SIZE) % Chunk.SIZE;
+                                    int oy = (ny + Chunk.SIZE) % Chunk.SIZE;
+                                    int oz = (nz + Chunk.SIZE) % Chunk.SIZE;
+                                    if (neighbor.isInBounds(ox, oy, oz)) {
+                                        neighborBlock = neighbor.getBlock(ox, oy, oz);
+                                    }
+                                }
+                            } else {
+                                neighborBlock = chunk.getBlock(nx, ny, nz);
+                            }
 
-                        for (int i = 0; i < 4; i++) {
-                            vertexBuffer.put(faceVertices[i * 3]);
-                            vertexBuffer.put(faceVertices[i * 3 + 1]);
-                            vertexBuffer.put(faceVertices[i * 3 + 2]);
-                            vertexBuffer.put(UVS[i][0]);
-                            vertexBuffer.put(UVS[i][1]);
-                            vertexBuffer.put(block);
-                            vertexBuffer.put(faceId);
+                            BlockType neighborBlockType = BlockType.fromId(neighborBlock);
+
+                            if (shouldCullFace(blockType,neighborBlockType)) continue;
+
+                            float[] faceVertices = getFaceVertices(x, y, z, face);
+                            int faceId = getFaceId(face);
+
+                            for (int i = 0; i < 4; i++) {
+                                opaqueVertexBuffer.put(faceVertices[i * 3]);
+                                opaqueVertexBuffer.put(faceVertices[i * 3 + 1]);
+                                opaqueVertexBuffer.put(faceVertices[i * 3 + 2]);
+                                opaqueVertexBuffer.put(UVS[i][0]);
+                                opaqueVertexBuffer.put(UVS[i][1]);
+                                opaqueVertexBuffer.put(block);
+                                opaqueVertexBuffer.put(faceId);
+                            }
+
+                            opaqueIndexBuffer.put(opaqueIndexOffset);
+                            opaqueIndexBuffer.put(opaqueIndexOffset + 1);
+                            opaqueIndexBuffer.put(opaqueIndexOffset + 2);
+                            opaqueIndexBuffer.put(opaqueIndexOffset + 2);
+                            opaqueIndexBuffer.put(opaqueIndexOffset + 3);
+                            opaqueIndexBuffer.put(opaqueIndexOffset);
+                            opaqueIndexOffset += 4;
+                            opaqueVertexCount += 4;
                         }
-
-                        indexBuffer.put(indexOffset);
-                        indexBuffer.put(indexOffset + 1);
-                        indexBuffer.put(indexOffset + 2);
-                        indexBuffer.put(indexOffset + 2);
-                        indexBuffer.put(indexOffset + 3);
-                        indexBuffer.put(indexOffset);
-                        indexOffset += 4;
-                        vertexCount += 4;
                     }
                 }
             }
         }
 
-        vertexBuffer.flip();
-        indexBuffer.flip();
+        opaqueVertexBuffer.flip();
+        opaqueIndexBuffer.flip();
 
-        return new ChunkMeshData(vertexBuffer, indexBuffer, vertexCount);
+        transparentVertexBuffer.flip();
+        transparentIndexBuffer.flip();
+
+        return new ChunkMeshData(opaqueVertexBuffer, opaqueIndexBuffer, opaqueVertexCount, transparentVertexBuffer, transparentIndexBuffer, transparentVertexCount);
     }
 
+    private static boolean shouldCullFace(BlockType current, BlockType neighbor) {
+        return switch (current.getCullingMode()) {
+            case NONE -> false;
+            case ALWAYS_CULL -> neighbor != BlockType.AIR;
+            case CULL_IF_OPAQUE -> neighbor != BlockType.AIR && !neighbor.isTransparent();
+            case CULL_IF_SAME -> neighbor == current;
+        };
+    }
 
     private static float[] getFaceVertices(int x, int y, int z, FaceDirection face) {
         float fx = x;

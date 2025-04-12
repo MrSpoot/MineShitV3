@@ -4,6 +4,7 @@ import com.mineshit.engine.graphics.Camera;
 import com.mineshit.engine.input.InputManager;
 import com.mineshit.engine.utils.FaceDirection;
 import com.mineshit.engine.utils.Statistic;
+import com.mineshit.game.player.PlayerController;
 import com.mineshit.game.world.World;
 import com.mineshit.game.world.generation.BlockType;
 import com.mineshit.game.world.generation.Chunk;
@@ -11,6 +12,8 @@ import com.mineshit.game.world.generation.ChunkState;
 import lombok.Getter;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWScrollCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +29,21 @@ public class WorldInteraction {
 
     private static final long CLICK_DELAY_MS = 200; // par exemple 150ms entre deux clics
 
+    private int selectedIndex = 0;
+
+    private final BlockType[] availableBlocks = {
+            BlockType.STONE,
+            BlockType.GLASS,
+            BlockType.LEAVE,
+            BlockType.GRASS,
+            BlockType.DIRT,
+            BlockType.WOOD_LOG
+    };
 
     @Getter
     private HitResult hitResult;
 
-    public void update(InputManager input, World world, Camera camera) {
+    public void update(PlayerController playerController, InputManager input, World world, Camera camera) {
         hitResult = raycast(world, camera);
 
         if(hitResult != null && hitResult.blockPos() != null) {
@@ -43,13 +56,20 @@ public class WorldInteraction {
 
         if (input.isMouseKeyDown(GLFW_MOUSE_BUTTON_LEFT) && currentTime - lastLeftClickTime >= CLICK_DELAY_MS) {
             lastLeftClickTime = currentTime;
-            onLeftClick(world, hitResult);
+            onLeftClick(playerController, world, hitResult);
         }
 
         if (input.isMouseKeyDown(GLFW_MOUSE_BUTTON_RIGHT) && currentTime - lastRightClickTime >= CLICK_DELAY_MS) {
             lastRightClickTime = currentTime;
-            onRightClick(world, hitResult);
+            onRightClick(playerController, world, hitResult);
         }
+
+        int scroll = input.getMouseScroll();
+        if (scroll != 0) {
+            selectedIndex = (selectedIndex - scroll + availableBlocks.length) % availableBlocks.length;
+            Statistic.set("Selected", availableBlocks[selectedIndex].name());
+        }
+
     }
 
 
@@ -104,7 +124,7 @@ public class WorldInteraction {
     }
 
 
-    private void onLeftClick(World world, HitResult r) {
+    private void onLeftClick(PlayerController playerController, World world, HitResult r) {
         if (r == null) return;
 
         Vector3i hitBlock = r.blockPos();
@@ -117,14 +137,14 @@ public class WorldInteraction {
 
             if (chunk.isInBounds(localX, localY, localZ)) {
                 chunk.setBlock(localX, localY, localZ, BlockType.AIR);
-                chunk.setState(ChunkState.DIRTY);
+                chunk.setState(ChunkState.DIRTY_NOW);
 
                 world.setDirtyNeighborBlock(chunk, localX, localY, localZ);
             }
         }
     }
 
-    private void onRightClick(World world, HitResult r) {
+    private void onRightClick(PlayerController playerController, World world, HitResult r) {
         if (r == null || r.hitFace() == null) return;
 
         Vector3i target = new Vector3i(r.blockPos()).add(r.hitFace().getOffset());
@@ -135,9 +155,9 @@ public class WorldInteraction {
             int localY = target.y - chunk.getPosition().y * Chunk.SIZE;
             int localZ = target.z - chunk.getPosition().z * Chunk.SIZE;
 
-            if (chunk.isInBounds(localX, localY, localZ)) {
-                chunk.setBlock(localX, localY, localZ, BlockType.TEST);
-                chunk.setState(ChunkState.DIRTY);
+            if (chunk.isInBounds(localX, localY, localZ) && !playerController.isOccupying(target)) {
+                chunk.setBlock(localX, localY, localZ, availableBlocks[selectedIndex]);
+                chunk.setState(ChunkState.DIRTY_NOW);
 
                 world.setDirtyNeighborBlock(chunk, localX, localY, localZ);
             }
