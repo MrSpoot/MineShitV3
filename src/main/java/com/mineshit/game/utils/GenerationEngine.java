@@ -8,7 +8,7 @@ public class GenerationEngine {
     private static final long SEED = 1;
     private static final float AMPLITUDE = 25.0f;
     private static final int BASE_HEIGHT = 10;
-    private static final int WATER_LEVEL = -11;
+    private static final int WATER_LEVEL = -11 ;
     private static final FastNoiseLite noise = new FastNoiseLite();
 
     static {
