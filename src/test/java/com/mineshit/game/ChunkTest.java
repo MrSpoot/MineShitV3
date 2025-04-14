@@ -1,6 +1,6 @@
 package com.mineshit.game;
 
-import com.mineshit.game.world.generation.Chunk;
+import com.mineshit.game.world.utils.Chunk;
 import org.joml.Vector3i;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

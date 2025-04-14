@@ -1,11 +1,10 @@
-package com.mineshit.game.world.generation;
+package com.mineshit.game.world.utils;
 
 import com.mineshit.engine.game.ChunkMeshBuilder;
 import com.mineshit.engine.game.ChunkMeshData;
 import com.mineshit.engine.graphics.renderer.Mesh;
 import com.mineshit.engine.graphics.renderer.Shader;
 import com.mineshit.engine.utils.FaceDirection;
-import com.mineshit.engine.utils.Statistic;
 import com.mineshit.game.world.World;
 import lombok.Getter;
 import org.joml.Matrix4f;

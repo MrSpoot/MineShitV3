@@ -1,15 +1,12 @@
 package com.mineshit.game.world.generation;
 
 import com.mineshit.engine.utils.FaceDirection;
-import com.mineshit.game.utils.GenerationEngine;
+import com.mineshit.game.world.utils.Chunk;
+import com.mineshit.game.world.utils.ChunkState;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,6 +45,8 @@ public class WorldGeneration {
     private void generateNewChunks(Vector3f cameraPosition) {
         Vector3i chunkCameraPosition = getChunkCameraPosition(cameraPosition);
 
+        List<Vector3i> chunksToGenerate = new ArrayList<>();
+
         for (int dx = -RENDER_DISTANCE; dx <= RENDER_DISTANCE; dx++) {
             for (int dy = -RENDER_DISTANCE; dy <= RENDER_DISTANCE; dy++) {
                 for (int dz = -RENDER_DISTANCE; dz <= RENDER_DISTANCE; dz++) {
@@ -55,21 +54,30 @@ public class WorldGeneration {
                     if (distSq > getSquaredRenderDistance()) continue;
 
                     Vector3i pos = new Vector3i(chunkCameraPosition.x + dx, chunkCameraPosition.y + dy, chunkCameraPosition.z + dz);
+                    if (chunks.containsKey(pos)) continue;
 
-                    Chunk placeholder = new Chunk(pos);
-                    placeholder.setState(ChunkState.EMPTY);
-
-                    if (chunks.putIfAbsent(pos, placeholder) != null) continue;
-
-                    executor.submit(() -> {
-                        GenerationEngine.generateChunkData(placeholder);
-                        placeholder.setState(ChunkState.GENERATED);
-                        generatedChunks.add(placeholder);
-                    });
+                    chunksToGenerate.add(pos);
                 }
             }
         }
+
+        chunksToGenerate.sort(Comparator.comparingLong(pos ->
+                pos.distanceSquared(chunkCameraPosition)
+        ));
+
+        for (Vector3i pos : chunksToGenerate) {
+            Chunk placeholder = new Chunk(pos);
+            placeholder.setState(ChunkState.EMPTY);
+            chunks.put(pos, placeholder);
+
+            executor.submit(() -> {
+                GenerationEngine.generateChunkData(placeholder);
+                placeholder.setState(ChunkState.GENERATED);
+                generatedChunks.add(placeholder);
+            });
+        }
     }
+
 
 
     private void removeFarChunks(Vector3f cameraPosition) {

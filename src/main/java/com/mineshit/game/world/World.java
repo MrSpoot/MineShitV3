@@ -2,9 +2,8 @@ package com.mineshit.game.world;
 
 import com.mineshit.engine.utils.FaceDirection;
 import com.mineshit.engine.utils.Statistic;
-import com.mineshit.game.utils.GenerationEngine;
-import com.mineshit.game.world.generation.Chunk;
-import com.mineshit.game.world.generation.ChunkState;
+import com.mineshit.game.world.utils.Chunk;
+import com.mineshit.game.world.utils.ChunkState;
 import com.mineshit.game.world.generation.WorldGeneration;
 import com.mineshit.game.world.interaction.WorldInteraction;
 import lombok.Getter;

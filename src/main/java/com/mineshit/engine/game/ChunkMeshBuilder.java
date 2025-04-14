@@ -1,11 +1,8 @@
 package com.mineshit.engine.game;
 
-import com.mineshit.engine.graphics.renderer.Mesh;
 import com.mineshit.engine.utils.FaceDirection;
-import com.mineshit.game.world.World;
-import com.mineshit.game.world.generation.BlockType;
-import com.mineshit.game.world.generation.Chunk;
-import org.lwjgl.system.MemoryUtil;
+import com.mineshit.game.world.utils.BlockType;
+import com.mineshit.game.world.utils.Chunk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

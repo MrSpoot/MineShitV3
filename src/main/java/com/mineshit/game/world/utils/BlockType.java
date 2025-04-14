@@ -1,4 +1,4 @@
-package com.mineshit.game.world.generation;
+package com.mineshit.game.world.utils;
 
 import com.mineshit.engine.utils.CullingMode;
 import lombok.Getter;

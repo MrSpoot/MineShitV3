@@ -1,4 +1,4 @@
-package com.mineshit.game.world.generation;
+package com.mineshit.game.world.utils;
 
 public enum ChunkState {
     EMPTY,         // Pas encore généré

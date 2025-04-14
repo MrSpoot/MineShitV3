@@ -6,14 +6,12 @@ import com.mineshit.engine.utils.FaceDirection;
 import com.mineshit.engine.utils.Statistic;
 import com.mineshit.game.player.PlayerController;
 import com.mineshit.game.world.World;
-import com.mineshit.game.world.generation.BlockType;
-import com.mineshit.game.world.generation.Chunk;
-import com.mineshit.game.world.generation.ChunkState;
+import com.mineshit.game.world.utils.BlockType;
+import com.mineshit.game.world.utils.Chunk;
+import com.mineshit.game.world.utils.ChunkState;
 import lombok.Getter;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWScrollCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

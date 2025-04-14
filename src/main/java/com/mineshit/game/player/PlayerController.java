@@ -3,7 +3,8 @@ package com.mineshit.game.player;
 import com.mineshit.engine.graphics.Camera;
 import com.mineshit.engine.input.InputManager;
 import com.mineshit.game.world.World;
-import com.mineshit.game.world.generation.Chunk;
+import com.mineshit.game.world.utils.Chunk;
+import com.mineshit.game.world.utils.BlockType;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
@@ -141,7 +142,7 @@ public class PlayerController {
                         short id = chunk.getBlockAtWorld(bx, by, bz);
 
                         if (id != 0) {
-                            float density = com.mineshit.game.world.generation.BlockType.fromId(id).getDensity();
+                            float density = BlockType.fromId(id).getDensity();
                             maxDensity = Math.max(maxDensity, density);
                         }
                     }
