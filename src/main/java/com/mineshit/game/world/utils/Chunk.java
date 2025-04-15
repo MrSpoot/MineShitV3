@@ -6,6 +6,7 @@ import org.joml.Vector3i;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Chunk {
     public static final int SIZE = 32;
@@ -82,6 +83,44 @@ public class Chunk {
         int index = getBlockIndex(x, y, z);
         writeBlockData(index, paletteIndex, data, bitsPerBlock);
     }
+
+    public void setAllBlocks(short[] blocks) {
+        if (blocks.length != TOTAL_BLOCKS) {
+            throw new IllegalArgumentException("Block array must contain exactly " + TOTAL_BLOCKS + " elements.");
+        }
+
+        boolean uniform = true;
+        short first = blocks[0];
+        for (int i = 1; i < blocks.length; i++) {
+            if (blocks[i] != first) {
+                uniform = false;
+                break;
+            }
+        }
+
+        if (uniform) {
+            this.fillChunk(Objects.requireNonNull(BlockType.fromId(first))); // ou juste: this.uniformBlockId = first; this.isUniform = true; ...
+            return;
+        }
+
+        this.isUniform = false;
+        this.initializePaletteAndData();
+
+        for (int i = 0; i < blocks.length; i++) {
+            short blockId = blocks[i];
+            int paletteIndex = palette.indexOf(blockId);
+
+            if (paletteIndex == -1) {
+                palette.add(blockId);
+                paletteIndex = palette.size() - 1;
+                ensureCapacity();
+            }
+
+            writeBlockData(i, paletteIndex, data, bitsPerBlock);
+        }
+    }
+
+
 
     public void fillChunk(BlockType block) {
         short blockId = block.getId();
