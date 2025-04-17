@@ -18,6 +18,7 @@ public class InterfaceRenderer {
     private long vg;
 
     public void init(){
+        LOGGER.info("Initializing InterfaceRenderer");
         vg = nvgCreate(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
         if (vg == 0) {
             throw new IllegalStateException("Failed to create NanoVG context");

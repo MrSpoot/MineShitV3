@@ -6,10 +6,14 @@ import com.mineshit.engine.utils.Statistic;
 import com.mineshit.engine.window.Window;
 import com.mineshit.game.player.PlayerController;
 import com.mineshit.game.world.World;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.lwjgl.opengl.GL11.*;
 
 public class Renderer {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Renderer.class);
 
     private final SkyBoxRenderer skyBoxRenderer = new SkyBoxRenderer();
     private final ChunkRenderer chunkRenderer = new ChunkRenderer();
@@ -17,6 +21,7 @@ public class Renderer {
     private final InterfaceRenderer interfaceRenderer = new InterfaceRenderer();
 
     public void init() {
+        LOGGER.info("Initializing Renderer");
         skyBoxRenderer.init();
         chunkRenderer.init();
         selectionRenderer.init();

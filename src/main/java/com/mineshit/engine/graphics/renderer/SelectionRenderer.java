@@ -23,11 +23,14 @@ import static org.lwjgl.opengl.GL13C.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13C.glActiveTexture;
 
 public class SelectionRenderer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SelectionRenderer.class);
+
     private static Mesh mesh;
     private Shader shader;
     private int textureId;
 
     public void init() {
+        LOGGER.info("Initializing SelectionRenderer");
         FloatBuffer vertexBuffer = MemoryUtil.memAllocFloat(8 * 3);
         vertexBuffer.put(new float[]{
                 0, 0, 0, // 0
@@ -88,7 +91,7 @@ public class SelectionRenderer {
 
         Matrix4f model = new Matrix4f()
                 .translate(r.blockPos().x + 0.5f, r.blockPos().y + 0.5f, r.blockPos().z + 0.5f)
-                .scale(1.001f)
+                .scale(1.01f)
                 .translate(-0.5f, -0.5f, -0.5f);
 
         glEnable(GL_BLEND);

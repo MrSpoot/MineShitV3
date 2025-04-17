@@ -35,7 +35,7 @@ public class TextureLoader {
             textures.add(image.getByteBuffer());
         }
 
-        LOGGER.info("Loading {} textures", textures.size());
+        LOGGER.info("{} textures loaded", textures.size());
 
         return new TextureArray(width, height, textures);
     }
