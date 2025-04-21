@@ -161,7 +161,6 @@
 
     <build>
         <plugins>
-            <!-- Plugin pour créer un JAR exécutable -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -175,7 +174,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.mineshit.Main</mainClass>
+                                    <mainClass>com.mineshit.Game</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

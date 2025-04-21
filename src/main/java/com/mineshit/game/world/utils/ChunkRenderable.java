@@ -118,6 +118,22 @@ public class ChunkRenderable {
         transparentMesh.render();
     }
 
+    public void renderShadow(World world, Shader shadowShader, Matrix4f lightSpaceMatrix) {
+        if (opaqueMesh == null) return;
+
+        Matrix4f model = new Matrix4f().translate(
+                chunk.getPosition().x * Chunk.SIZE,
+                chunk.getPosition().y * Chunk.SIZE,
+                chunk.getPosition().z * Chunk.SIZE
+        );
+
+        shadowShader.setUniform("uModel", model);
+        shadowShader.setUniform("uLightSpaceMatrix", lightSpaceMatrix);
+
+        opaqueMesh.render();
+    }
+
+
     public boolean hasTransparent(){
         return transparentMesh != null;
     }

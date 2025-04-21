@@ -33,7 +33,7 @@ public class Renderer {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         skyBoxRenderer.render(camera,world,alpha);
-        chunkRenderer.render(input, playerController, camera,world,alpha);
+        chunkRenderer.render(window,input, playerController, camera,world,alpha);
         selectionRenderer.render(camera,world,alpha);
         interfaceRenderer.render(window);
 
