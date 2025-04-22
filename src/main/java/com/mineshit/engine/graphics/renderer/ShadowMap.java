@@ -13,7 +13,9 @@ import static org.lwjgl.opengl.GL30C.*;
 public class ShadowMap {
     private static final Logger LOGGER = LoggerFactory.getLogger(ShadowMap.class);
 
+    @Getter
     private final int width;
+    @Getter
     private final int height;
 
     private int fbo;
@@ -41,6 +43,11 @@ public class ShadowMap {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture, 0);
         glDrawBuffer(GL_NONE);
         glReadBuffer(GL_NONE);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            LOGGER.error("Failed to initialize shadow map - Framebuffer is not complete!");
+        }
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 

@@ -9,6 +9,7 @@ out flat float vTexIndex;
 out flat float vFaceIndex;
 out vec4 vFragPosLightSpace;
 out vec2 vUV;
+out vec3 vWorldPos;
 
 uniform mat4 uProjection;
 uniform mat4 uView;
@@ -17,6 +18,7 @@ uniform mat4 uLightSpaceMatrix;
 
 void main() {
     vec4 worldPos = uModel * vec4(aPos, 1.0);
+    vWorldPos = worldPos.xyz;
     vFragPosLightSpace = uLightSpaceMatrix * worldPos;
 
     vTexIndex = aTexIndex;
@@ -34,23 +36,42 @@ in vec2 vUV;
 in flat float vTexIndex;
 in flat float vFaceIndex;
 in vec4 vFragPosLightSpace;
+in vec3 vWorldPos;
 
 uniform sampler2DArray uTextureArray;
 uniform vec3 uSunDir;
 uniform sampler2D uShadowMap;
 uniform mat4 uLightSpaceMatrix;
 
-float getShadow(vec4 fragPosLightSpace, float bias) {
+float calculateShadow(vec4 fragPosLightSpace, vec3 worldNormal)
+{
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
 
     if(projCoords.z > 1.0) return 0.0;
 
-    float closestDepth = texture(uShadowMap, projCoords.xy).r;
     float currentDepth = projCoords.z;
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(uShadowMap, 0);
 
-    return currentDepth - bias > closestDepth ? 1.0 : 0.0;
+    // 🔍 Normale dynamique pour bias
+    vec3 dynamicNormal = normalize(cross(dFdx(vWorldPos), dFdy(vWorldPos)));
+    float bias = max(0.001 * (1.0 - dot(dynamicNormal, normalize(uSunDir))), 0.0002);
+
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            vec2 offset = vec2(x, y) * texelSize;
+            float pcfDepth = texture(uShadowMap, projCoords.xy + offset).r;
+            shadow += (currentDepth - bias > pcfDepth) ? 1.0 : 0.0;
+        }
+    }
+
+    shadow /= 9.0;
+    return shadow;
 }
+
 
 vec2 getFaceUV(vec2 baseUV, int faceIndex) {
     const float faceCount = 6.0;
@@ -76,16 +97,33 @@ vec3 getFaceNormal(int faceIndex) {
 
 void main() {
     vec4 texColor = texture(uTextureArray, vec3(getFaceUV(vUV, int(vFaceIndex)), vTexIndex - 1));
-    if(texColor.a < 0.1) discard;
+    if (texColor.a < 0.1) discard;
 
-    vec3 normal = getFaceNormal(int(vFaceIndex));
-    float brightness = max(dot(normalize(normal), normalize(uSunDir)), 0.7);
+    vec3 faceNormal = getFaceNormal(int(vFaceIndex));
+    vec3 dynamicNormal = normalize(cross(dFdx(vWorldPos), dFdy(vWorldPos)));
 
-    // Shadow test
-    float bias = 0.005;
-    float shadow = getShadow(vFragPosLightSpace, bias);
+    float shadow = calculateShadow(vFragPosLightSpace, dynamicNormal);
 
-    float light = max(0.5, shadow); // dans l’ombre → moins de lumière
-    FragColor = vec4(texColor.rgb * light, texColor.a);
+    // 💡 Calcul progressif de l’intensité du soleil
+    float sunHeight = clamp(-uSunDir.y, 0.0, 1.0);
+    float lightIntensity = smoothstep(0.1, 0.3, sunHeight); // 0 = nuit, 1 = plein jour
+
+    vec3 lightColor = texColor.rgb;
+    float sunDot = max(dot(normalize(faceNormal), -normalize(uSunDir)), 0.5);
+
+    // lumière directe
+    float diffuse = sunDot * lightIntensity;
+
+    // ombre seulement si lumière directe
+    float shadowFactor = 1.0 - shadow * lightIntensity * 0.5;
+
+    // lumière finale (directe * ombre) + ambiance
+    float brightness = diffuse * shadowFactor;
+    brightness = mix(0.3, brightness, lightIntensity); // ambiance nuit
+
+    FragColor = vec4(lightColor * brightness, texColor.a);
+
 }
+
+
 //@endfs

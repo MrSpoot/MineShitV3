@@ -46,7 +46,7 @@ public class Game {
     private void init() {
         LOGGER.info("Initializing");
 
-        window = new Window("MineShit", 1920, 1080 );
+        window = new Window("MineShit", 1280, 720 );
         window.create();
 
         camera = new Camera(70f, window.aspectRatio());
@@ -65,6 +65,8 @@ public class Game {
         TextureManager.init();
 
         world = new World();
+
+        //world.getClock().pause();
 
     }
 
@@ -105,6 +107,9 @@ public class Game {
 
         if (input.isKeyDown(GLFW_KEY_P)) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         if (input.isKeyDown(GLFW_KEY_O)) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        if(input.isKeyDown(GLFW_KEY_Y)) world.getClock().pause();
+        if(input.isKeyDown(GLFW_KEY_U)) world.getClock().resume();
 
 
         Statistic.set("Camera Position","X : "+String.format("%.1f",camera.getPosition().x)+" | Y : "+String.format("%.1f",camera.getPosition().y)+" | Z : "+String.format("%.1f",camera.getPosition().z));

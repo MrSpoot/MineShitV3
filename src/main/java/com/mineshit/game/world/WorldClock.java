@@ -52,7 +52,13 @@ public class WorldClock {
 
     public Vector3f getSunDirection() {
         float angle = -getWorldTime() * 2.0f * (float)Math.PI;
-        return new Vector3f((float)Math.cos(angle), (float)Math.sin(angle), 0.0f).normalize();
+        Vector3f dir = new Vector3f(
+                (float)Math.cos(angle) * 0.95f,
+                (float)Math.sin(angle),
+                (float)Math.cos(angle) * 0.2f
+        );
+        return dir.normalize().negate();
+
     }
 
     public void reset() {

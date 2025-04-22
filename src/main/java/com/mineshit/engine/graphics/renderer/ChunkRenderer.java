@@ -31,7 +31,7 @@ public class ChunkRenderer {
     public void init() {
         LOGGER.info("Initializing ChunkRenderer");
         shader = new Shader("/shaders/basic.glsl");
-        shadowRenderer = new ShadowRenderer(2048,2048);
+        shadowRenderer = new ShadowRenderer(4096,4096);
     }
 
     public void render(Window window, InputManager input, PlayerController playerController, Camera camera, World world, float alpha) {
