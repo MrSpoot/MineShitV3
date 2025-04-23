@@ -13,7 +13,11 @@ public record ChunkMeshData(
 
         FloatBuffer transparentVertexBuffer,
         IntBuffer transparentIndexBuffer,
-        int transparentVertexCount
+        int transparentVertexCount,
+
+        FloatBuffer shadowVertexBuffer,
+        IntBuffer shadowIndexBuffer,
+        int shadowVertexCount
 ) {
 
     public boolean hasOpaque() {

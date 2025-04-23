@@ -66,6 +66,8 @@ public class Game {
 
         world = new World();
 
+        //world.getClock().pause();
+
     }
 
     private void loop() {
@@ -106,6 +108,9 @@ public class Game {
         if (input.isKeyDown(GLFW_KEY_P)) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         if (input.isKeyDown(GLFW_KEY_O)) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+        if(input.isKeyDown(GLFW_KEY_Y)) world.getClock().pause();
+        if(input.isKeyDown(GLFW_KEY_U)) world.getClock().resume();
+
 
         Statistic.set("Camera Position","X : "+String.format("%.1f",camera.getPosition().x)+" | Y : "+String.format("%.1f",camera.getPosition().y)+" | Z : "+String.format("%.1f",camera.getPosition().z));
 
@@ -114,7 +119,7 @@ public class Game {
 
 
     private void render(float alpha) {
-        renderer.render(window,playerController, input,camera,world,alpha);
+        renderer.render(window,playerController, input, camera,world,alpha);
     }
 
     private void cleanup() {

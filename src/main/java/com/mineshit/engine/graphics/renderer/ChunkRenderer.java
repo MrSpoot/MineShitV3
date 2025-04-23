@@ -4,11 +4,13 @@ import com.mineshit.engine.graphics.Camera;
 import com.mineshit.engine.graphics.textures.TextureManager;
 import com.mineshit.engine.input.InputManager;
 import com.mineshit.engine.utils.FaceDirection;
+import com.mineshit.engine.window.Window;
 import com.mineshit.game.player.PlayerController;
 import com.mineshit.game.world.utils.Chunk;
 import com.mineshit.game.world.utils.ChunkRenderable;
 import com.mineshit.game.world.utils.ChunkState;
 import com.mineshit.game.world.World;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.slf4j.Logger;
@@ -22,23 +24,31 @@ public class ChunkRenderer {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChunkRenderer.class);
 
     private Shader shader;
+    private ShadowRenderer shadowRenderer;
 
     private final Map<Vector3i, ChunkRenderable> renderables = new HashMap<>();
 
     public void init() {
         LOGGER.info("Initializing ChunkRenderer");
         shader = new Shader("/shaders/basic.glsl");
-
+        shadowRenderer = new ShadowRenderer(4096,4096);
     }
 
-    public void render(InputManager input, PlayerController playerController, Camera camera, World world, float alpha) {
+    public void render(Window window, InputManager input, PlayerController playerController, Camera camera, World world, float alpha) {
         world.getInteraction().update(playerController, input, world, camera);
+
+        shadowRenderer.begin(playerController.getPosition(), world.getClock().getSunDirection());
+        renderShadowWorld(world,shadowRenderer.getShader(), shadowRenderer.getLightSpaceMatrix());
+        shadowRenderer.end(window.getWidth(), window.getHeight());
 
         shader.useProgram();
         TextureManager.BLOCK_TEXTURES.bind(0);
 
         shader.setUniform("uProjection", camera.getProjectionMatrix());
         shader.setUniform("uView", camera.getViewMatrix());
+        shader.setUniform("uLightSpaceMatrix", shadowRenderer.getLightSpaceMatrix());
+        shader.setUniform("uShadowMap", 1);
+        shadowRenderer.bind(1);
 
         Iterator<Map.Entry<Vector3i, ChunkRenderable>> it = renderables.entrySet().iterator();
         while (it.hasNext()) {
@@ -83,6 +93,19 @@ public class ChunkRenderer {
             renderable.updateMeshIfNeeded(world);
         }
 
+        renderWorld(world,camera);
+
+        TextureManager.BLOCK_TEXTURES.unbind();
+        shader.unbind();
+    }
+
+    private void renderShadowWorld(World world, Shader shader, Matrix4f lightSpaceMatrix) {
+        for (ChunkRenderable renderable : renderables.values()) {
+            renderable.renderShadow(world, shader, lightSpaceMatrix);
+        }
+    }
+
+    private void renderWorld(World world, Camera camera) {
         for (ChunkRenderable renderable : renderables.values()) {
             renderable.renderOpaque(world,shader);
         }
@@ -111,18 +134,7 @@ public class ChunkRenderer {
 
         glDepthMask(true);
         glDisable(GL_BLEND);
-
-        TextureManager.BLOCK_TEXTURES.unbind();
-        shader.unbind();
     }
-
-    public void forceRebuildChunk(Vector3i chunkPos, World world) {
-        ChunkRenderable renderable = renderables.get(chunkPos);
-        if (renderable != null) {
-            renderable.forceRebuild(world);
-        }
-    }
-
 
     public void cleanup() {
         shader.destroy();
