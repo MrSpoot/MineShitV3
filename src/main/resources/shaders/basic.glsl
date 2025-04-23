@@ -54,7 +54,6 @@ float calculateShadow(vec4 fragPosLightSpace, vec3 worldNormal)
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(uShadowMap, 0);
 
-    // 🔍 Normale dynamique pour bias
     vec3 dynamicNormal = normalize(cross(dFdx(vWorldPos), dFdy(vWorldPos)));
     float bias = max(0.001 * (1.0 - dot(dynamicNormal, normalize(uSunDir))), 0.0002);
 
@@ -72,6 +71,13 @@ float calculateShadow(vec4 fragPosLightSpace, vec3 worldNormal)
     return shadow;
 }
 
+vec3 getSunColor(float height) {
+    vec3 morningEveningColor = vec3(1.0, 0.6, 0.3);
+    vec3 noonColor           = vec3(1.0);
+
+    float t = clamp(height * 2.0, 0.0, 1.0);
+    return mix(morningEveningColor, noonColor, t);
+}
 
 vec2 getFaceUV(vec2 baseUV, int faceIndex) {
     const float faceCount = 6.0;
@@ -104,26 +110,20 @@ void main() {
 
     float shadow = calculateShadow(vFragPosLightSpace, dynamicNormal);
 
-    // 💡 Calcul progressif de l’intensité du soleil
     float sunHeight = clamp(-uSunDir.y, 0.0, 1.0);
-    float lightIntensity = smoothstep(0.1, 0.3, sunHeight); // 0 = nuit, 1 = plein jour
+    float lightIntensity = smoothstep(0.0, 0.3, sunHeight);
 
-    vec3 lightColor = texColor.rgb;
+    vec3 sunColor = getSunColor(-uSunDir.y);
+    vec3 lightColor = texColor.rgb * sunColor;
     float sunDot = max(dot(normalize(faceNormal), -normalize(uSunDir)), 0.5);
 
-    // lumière directe
     float diffuse = sunDot * lightIntensity;
 
-    // ombre seulement si lumière directe
     float shadowFactor = 1.0 - shadow * lightIntensity * 0.5;
 
-    // lumière finale (directe * ombre) + ambiance
     float brightness = diffuse * shadowFactor;
-    brightness = mix(0.3, brightness, lightIntensity); // ambiance nuit
+    brightness = mix(0.3, brightness, lightIntensity);
 
     FragColor = vec4(lightColor * brightness, texColor.a);
-
 }
-
-
 //@endfs

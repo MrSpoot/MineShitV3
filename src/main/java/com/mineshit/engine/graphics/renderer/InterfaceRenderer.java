@@ -24,7 +24,7 @@ public class InterfaceRenderer {
             throw new IllegalStateException("Failed to create NanoVG context");
         }
 
-        int font = nvgCreateFont(vg, "sans", "C:\\Users\\Betterfly\\Documents\\GitHub\\MineShitV3\\src\\main\\resources\\fonts\\retro_gaming.ttf");
+        int font = nvgCreateFont(vg, "sans", "src/main/resources/fonts/retro_gaming.ttf");
         if (font == -1) {
             throw new IllegalStateException("Could not load font");
         }
