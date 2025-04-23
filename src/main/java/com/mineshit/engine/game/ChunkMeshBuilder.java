@@ -34,11 +34,17 @@ public class ChunkMeshBuilder {
         FloatBuffer transparentVertexBuffer = memAllocFloat(maxFaces * 4 * 7); // 7 floats per vertex now (added faceId)
         IntBuffer transparentIndexBuffer = memAllocInt(maxFaces * 6);
 
+        FloatBuffer shadowVertexBuffer = memAllocFloat(maxFaces * 4 * 7); // 7 floats per vertex now (added faceId)
+        IntBuffer shadowIndexBuffer = memAllocInt(maxFaces * 6);
+
         int opaqueIndexOffset = 0;
         int opaqueVertexCount = 0;
 
         int transparentIndexOffset = 0;
         int transparentVertexCount = 0;
+
+        int shadowIndexOffset = 0;
+        int shadowVertexCount = 0;
 
         for (int x = 0; x < Chunk.SIZE; x++) {
             for (int y = 0; y < Chunk.SIZE; y++) {
@@ -95,7 +101,12 @@ public class ChunkMeshBuilder {
                             transparentIndexBuffer.put(transparentIndexOffset);
                             transparentIndexOffset += 4;
                             transparentVertexCount += 4;
+
+                            appendFaceToBuffer(shadowVertexBuffer, shadowIndexBuffer, faceVertices, faceId, block, shadowIndexOffset);
+                            shadowIndexOffset += 4;
+                            shadowVertexCount += 4;
                         }
+
                     }else{
                         for (FaceDirection face : FaceDirection.values()) {
                             int nx = x + face.getOffsetX();
@@ -143,6 +154,10 @@ public class ChunkMeshBuilder {
                             opaqueIndexBuffer.put(opaqueIndexOffset);
                             opaqueIndexOffset += 4;
                             opaqueVertexCount += 4;
+
+                            appendFaceToBuffer(shadowVertexBuffer, shadowIndexBuffer, faceVertices, faceId, block, shadowIndexOffset);
+                            shadowIndexOffset += 4;
+                            shadowVertexCount += 4;
                         }
                     }
                 }
@@ -155,8 +170,38 @@ public class ChunkMeshBuilder {
         transparentVertexBuffer.flip();
         transparentIndexBuffer.flip();
 
-        return new ChunkMeshData(opaqueVertexBuffer, opaqueIndexBuffer, opaqueVertexCount, transparentVertexBuffer, transparentIndexBuffer, transparentVertexCount);
+        shadowVertexBuffer.flip();
+        shadowIndexBuffer.flip();
+
+        return new ChunkMeshData(opaqueVertexBuffer, opaqueIndexBuffer, opaqueVertexCount, transparentVertexBuffer, transparentIndexBuffer, transparentVertexCount, shadowVertexBuffer, shadowIndexBuffer, shadowVertexCount);
     }
+
+    private static void appendFaceToBuffer(
+            FloatBuffer vertexBuffer,
+            IntBuffer indexBuffer,
+            float[] faceVertices,
+            int faceId,
+            short blockId,
+            int vertexOffset
+    ) {
+        for (int i = 0; i < 4; i++) {
+            vertexBuffer.put(faceVertices[i * 3]);      // pos.x
+            vertexBuffer.put(faceVertices[i * 3 + 1]);  // pos.y
+            vertexBuffer.put(faceVertices[i * 3 + 2]);  // pos.z
+            vertexBuffer.put(UVS[i][0]);                // uv.x
+            vertexBuffer.put(UVS[i][1]);                // uv.y
+            vertexBuffer.put(blockId);                  // texture index
+            vertexBuffer.put(faceId);                   // face index
+        }
+
+        indexBuffer.put(vertexOffset);
+        indexBuffer.put(vertexOffset + 1);
+        indexBuffer.put(vertexOffset + 2);
+        indexBuffer.put(vertexOffset + 2);
+        indexBuffer.put(vertexOffset + 3);
+        indexBuffer.put(vertexOffset);
+    }
+
 
     private static boolean shouldCullFace(BlockType current, BlockType neighbor) {
         return switch (current.getCullingMode()) {

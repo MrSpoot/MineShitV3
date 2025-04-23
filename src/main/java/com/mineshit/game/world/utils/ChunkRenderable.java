@@ -27,6 +27,7 @@ public class ChunkRenderable {
     private final Chunk chunk;
     private Mesh opaqueMesh;
     private Mesh transparentMesh;
+    private Mesh shadowMesh;
 
     public ChunkRenderable(Chunk chunk) {
         this.chunk = chunk;
@@ -46,6 +47,7 @@ public class ChunkRenderable {
 
                 this.opaqueMesh = new Mesh(data.opaqueVertexBuffer(), data.opaqueIndexBuffer(), 7);
                 this.transparentMesh = new Mesh(data.transparentVertexBuffer(), data.transparentIndexBuffer(), 7);
+                this.shadowMesh = new Mesh(data.shadowVertexBuffer(), data.shadowIndexBuffer(), 7);
 
 
                 MemoryUtil.memFree(data.opaqueVertexBuffer());
@@ -53,6 +55,9 @@ public class ChunkRenderable {
 
                 MemoryUtil.memFree(data.transparentVertexBuffer());
                 MemoryUtil.memFree(data.transparentIndexBuffer());
+
+                MemoryUtil.memFree(data.shadowVertexBuffer());
+                MemoryUtil.memFree(data.shadowIndexBuffer());
 
                 if(chunk.getState() != ChunkState.DIRTY) {
                     chunk.setState(ChunkState.MESHED);
@@ -81,12 +86,16 @@ public class ChunkRenderable {
             this.opaqueMesh = new Mesh(data.opaqueVertexBuffer(), data.opaqueIndexBuffer(), 7);
             if (transparentMesh != null) transparentMesh.cleanup();
             this.transparentMesh = new Mesh(data.transparentVertexBuffer(), data.transparentIndexBuffer(), 7);
+            if (shadowMesh != null) shadowMesh.cleanup();
+            this.shadowMesh = new Mesh(data.shadowVertexBuffer(), data.shadowIndexBuffer(), 7);
         }
 
         MemoryUtil.memFree(data.opaqueVertexBuffer());
         MemoryUtil.memFree(data.opaqueIndexBuffer());
         MemoryUtil.memFree(data.transparentVertexBuffer());
         MemoryUtil.memFree(data.transparentIndexBuffer());
+        MemoryUtil.memFree(data.shadowVertexBuffer());
+        MemoryUtil.memFree(data.shadowIndexBuffer());
 
         chunk.setState(ChunkState.MESHED);
     }
@@ -119,7 +128,7 @@ public class ChunkRenderable {
     }
 
     public void renderShadow(World world, Shader shadowShader, Matrix4f lightSpaceMatrix) {
-        if (opaqueMesh == null) return;
+        if (shadowMesh == null) return;
 
         Matrix4f model = new Matrix4f().translate(
                 chunk.getPosition().x * Chunk.SIZE,
@@ -130,7 +139,7 @@ public class ChunkRenderable {
         shadowShader.setUniform("uModel", model);
         shadowShader.setUniform("uLightSpaceMatrix", lightSpaceMatrix);
 
-        opaqueMesh.render();
+        shadowMesh.render();
     }
 
 
@@ -141,6 +150,7 @@ public class ChunkRenderable {
     public void cleanup() {
         if (opaqueMesh != null) opaqueMesh.cleanup();
         if (transparentMesh != null) transparentMesh.cleanup();
+        if (shadowMesh != null) shadowMesh.cleanup();
         if(pendingMesh != null) pendingMesh.cancel(true);
     }
 

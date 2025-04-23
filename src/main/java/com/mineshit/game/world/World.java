@@ -18,10 +18,10 @@ import java.util.stream.Collectors;
 
 public class World {
     private static final Logger LOGGER = LoggerFactory.getLogger(World.class);
-    public static final float CYCLE_DURATION_SECONDS = 1 * 60;
+    public static final float CYCLE_DURATION_SECONDS = 20 * 60;
 
     @Getter
-    private final WorldClock clock = new WorldClock(CYCLE_DURATION_SECONDS, 0.75f);
+    private final WorldClock clock = new WorldClock(CYCLE_DURATION_SECONDS, 0.5f);
     @Getter
     private final WorldInteraction interaction = new WorldInteraction();
 
