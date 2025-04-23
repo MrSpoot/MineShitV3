@@ -33,7 +33,11 @@ public class WorldClock {
 
     public void resume() {
         if (paused) {
-            lastUpdateMillis = System.currentTimeMillis();
+            long now = System.currentTimeMillis();
+            float elapsedRatio = pausedTime - startTimeOffset;
+            if (elapsedRatio < 0) elapsedRatio += 1.0f;
+
+            lastUpdateMillis = now - (long)(elapsedRatio * cycleDurationSeconds * 1000f / speed);
             paused = false;
         }
     }
@@ -47,7 +51,7 @@ public class WorldClock {
 
         Statistic.set("World Time", time);
 
-        return time - (float)Math.floor(time); // garde entre 0-1
+        return time - (float)Math.floor(time);
     }
 
     public Vector3f getSunDirection() {
