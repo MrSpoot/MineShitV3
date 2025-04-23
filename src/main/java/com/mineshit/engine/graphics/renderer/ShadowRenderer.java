@@ -62,13 +62,13 @@ public class ShadowRenderer {
         center.z = (float) Math.floor(center.z / snapSize) * snapSize;
 
         // 💡 Position de la lumière éloignée dans la direction opposée
-        float lightDistance = 100f;
+        float lightDistance = 50f;
         Vector3f lightPos = new Vector3f(center).fma(-lightDistance, lightDirection);
 
         // 🎥 Vue orthographique : zone visible pour les ombres
-        float orthoSize = 100.0f; // taille du carré vu par la lumière
+        float orthoSize = 50.0f; // taille du carré vu par la lumière
         float nearPlane = 0.1f;
-        float farPlane = 300.0f;
+        float farPlane = 200.0f;
 
         Matrix4f lightProjection = new Matrix4f().ortho(
                 -orthoSize, orthoSize,
