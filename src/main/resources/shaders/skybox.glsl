@@ -56,7 +56,7 @@ void main() {
     );
 
     float sunAngle = -timeOfDay * 2.0 * 3.14159;
-    vec3 sundir = normalize(vec3(cos(sunAngle) * 0.95, sin(sunAngle),cos(sunAngle) * 0.2));
+    vec3 sundir = normalize(vec3(cos(sunAngle) * 0.95, sin(sunAngle),cos(sunAngle) * 0.4));
 
     float sunDot = clamp(dot(sundir, rd), 0.0, 1.0);
 

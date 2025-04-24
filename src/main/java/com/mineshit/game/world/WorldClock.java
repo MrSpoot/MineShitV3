@@ -59,7 +59,7 @@ public class WorldClock {
         Vector3f dir = new Vector3f(
                 (float)Math.cos(angle) * 0.95f,
                 (float)Math.sin(angle),
-                (float)Math.cos(angle) * 0.2f
+                (float)Math.cos(angle) * 0.4f
         );
         return dir.normalize().negate();
 

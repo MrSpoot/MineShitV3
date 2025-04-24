@@ -3,6 +3,7 @@ package com.mineshit.engine.game;
 import com.mineshit.engine.utils.FaceDirection;
 import com.mineshit.game.world.utils.BlockType;
 import com.mineshit.game.world.utils.Chunk;
+import com.mineshit.game.world.utils.TransparencyType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +55,7 @@ public class ChunkMeshBuilder {
 
                     BlockType blockType = BlockType.fromId(block);
 
-                    if(blockType.isTransparent()){
+                    if(blockType.getTransparencyType().equals(TransparencyType.TRANSLUCENT) || blockType.getTransparencyType().equals(TransparencyType.TRANSPARENT)) {
                         for (FaceDirection face : FaceDirection.values()) {
                             int nx = x + face.getOffsetX();
                             int ny = y + face.getOffsetY();
@@ -206,9 +207,17 @@ public class ChunkMeshBuilder {
     private static boolean shouldCullFace(BlockType current, BlockType neighbor) {
         return switch (current.getCullingMode()) {
             case NONE -> false;
+
             case ALWAYS_CULL -> neighbor != BlockType.AIR;
-            case CULL_IF_OPAQUE -> neighbor != BlockType.AIR && !neighbor.isTransparent();
+
+            case CULL_IF_OPAQUE -> neighbor != BlockType.AIR
+                    && neighbor.getTransparencyType() == TransparencyType.OPAQUE;
+
             case CULL_IF_SAME -> neighbor == current;
+
+            case CULL_IF_SOLID -> neighbor != BlockType.AIR
+                    && (neighbor.getTransparencyType() == TransparencyType.OPAQUE
+                    || neighbor.getTransparencyType() == TransparencyType.CUTOUT);
         };
     }
 

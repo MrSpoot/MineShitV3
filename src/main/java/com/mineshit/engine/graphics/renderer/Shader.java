@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 
 import static org.lwjgl.opengl.GL11.GL_TRUE;
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL32C.GL_GEOMETRY_SHADER;
 
 public class Shader {
 
@@ -23,31 +24,43 @@ public class Shader {
     private final int program;
     private final int vertex;
     private final int fragment;
+    private final int geometry;
     private final Map<String, Integer> uniforms = new HashMap<>();
     private String vertexCode;
     private String fragmentCode;
+    private String geometryCode;
 
     public Shader(String path) {
         vertex = glCreateShader(GL_VERTEX_SHADER);
         fragment = glCreateShader(GL_FRAGMENT_SHADER);
+        geometry = glCreateShader(GL_GEOMETRY_SHADER);
         program = glCreateProgram();
 
         loadShader(path);
 
         compileShader(vertex, vertexCode);
         compileShader(fragment, fragmentCode);
+        compileShader(geometry, geometryCode);
+
         compileProgram(program);
 
         extractUniforms(vertexCode);
         extractUniforms(fragmentCode);
+        extractUniforms(geometryCode);
     }
 
     private void compileProgram(int programId) {
         glAttachShader(programId, vertex);
         glAttachShader(programId, fragment);
+
+        if(geometryCode != null && !geometryCode.isEmpty()) {
+            glAttachShader(programId, geometry);
+        }
+
         glLinkProgram(program);
         glDeleteShader(vertex);
         glDeleteShader(fragment);
+        glDeleteShader(geometry);
         checkShaderProgramLinking(program);
     }
 
@@ -203,11 +216,21 @@ public class Shader {
             fragment.append(fragmentMatcher.group(1)).append(" ");
         }
 
+        Pattern geometryPattern = Pattern.compile("//@gs(.*?)//@endgs", Pattern.DOTALL);
+        Matcher geometryMatcher = geometryPattern.matcher(file);
+
+        StringBuilder geometry = new StringBuilder();
+
+        while (geometryMatcher.find()){
+            geometry.append(geometryMatcher.group(1)).append(" ");
+        }
+
         if(vertex.isEmpty() || fragment.isEmpty()){
             LOGGER.error("Shader cannot be compile");
         }else{
             this.vertexCode = vertex.toString().trim();
             this.fragmentCode = fragment.toString().trim();
+            this.geometryCode = geometry.toString().trim();
         }
     }
 

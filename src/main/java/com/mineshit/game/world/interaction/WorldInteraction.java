@@ -35,7 +35,8 @@ public class WorldInteraction {
             BlockType.LEAVE,
             BlockType.GRASS,
             BlockType.DIRT,
-            BlockType.WOOD_LOG
+            BlockType.WOOD_LOG,
+            BlockType.WATER
     };
 
     @Getter
