@@ -3,15 +3,12 @@ package com.mineshit.engine.graphics.renderer.utils;
 import lombok.Getter;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.IntBuffer;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
 
-import static org.lwjgl.opengl.GL11C.glBindTexture;
+import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL30C.*;
 
 public class GBuffer {
@@ -22,12 +19,12 @@ public class GBuffer {
         POSITION
     }
 
+    @Getter private final int width, height;
+
     @Getter
-    private final int width, height;
-
     private final int fbo;
-    private final int depthRenderbuffer;
-
+    @Getter
+    private final int depthTexture;
     private final Map<Attachment, Integer> textures = new EnumMap<>(Attachment.class);
 
     public GBuffer(int width, int height) {
@@ -37,16 +34,19 @@ public class GBuffer {
         fbo = glGenFramebuffers();
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-        // Attachments
         addColorAttachment(Attachment.ALBEDO, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE);
         addColorAttachment(Attachment.NORMAL, GL_RGB16F, GL_RGB, GL_FLOAT);
         addColorAttachment(Attachment.POSITION, GL_RGB16F, GL_RGB, GL_FLOAT);
 
-        // Depth
-        depthRenderbuffer = glGenRenderbuffers();
-        glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
+        depthTexture = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, depthTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0,
+                GL_DEPTH_COMPONENT, GL_FLOAT, (IntBuffer) null);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer drawBuffers = stack.mallocInt(textures.size());
@@ -92,9 +92,14 @@ public class GBuffer {
         }
     }
 
+    public void bindDepthTexture(int unit) {
+        glActiveTexture(GL_TEXTURE0 + unit);
+        glBindTexture(GL_TEXTURE_2D, depthTexture);
+    }
+
     public void cleanup() {
         textures.values().forEach(GL30::glDeleteTextures);
-        glDeleteRenderbuffers(depthRenderbuffer);
+        glDeleteTextures(depthTexture);
         glDeleteFramebuffers(fbo);
     }
 }

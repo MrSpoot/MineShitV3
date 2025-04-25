@@ -22,11 +22,12 @@ public class Renderer {
     public void init(Window window) {
         LOGGER.info("Initializing Renderer");
 
-        this.pipeline.addPass(new SkyBoxPass());
-        this.pipeline.addPass(new ChunkShadowPass());
-        this.pipeline.addPass(new ChunkOpaquePass());
-        this.pipeline.addPass(new ChunkTransparentPass());
-        this.pipeline.addPass(new InterfacePass());
+        pipeline.addPass(new SkyBoxPass());
+        //pipeline.addPass(new ChunkShadowPass());
+        pipeline.addPass(new ChunkOpaquePass());
+        pipeline.addPass(new ScreenPass());
+        pipeline.addPass(new ChunkTransparentPass());
+        pipeline.addPass(new InterfacePass());
 
         this.pipeline.init(window);
     }

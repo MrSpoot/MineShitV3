@@ -63,6 +63,12 @@ public class Pipeline {
         this.gBuffer.cleanup();
         this.shadowMap.cleanup();
         passes.forEach(RenderPass::cleanup);
+
+        for(ChunkRenderable chunk : renderables.values()) {
+            chunk.cleanup();
+        }
+
+        ChunkRenderable.cleanupStatic();
     }
 
     public void addPass(RenderPass pass) {

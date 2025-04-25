@@ -13,26 +13,27 @@ public class ChunkOpaquePass implements RenderPass {
     private Shader shader;
 
     public void init(){
-        this.shader = new Shader("/shaders/basic.glsl");
+        this.shader = new Shader("/shaders/opaque_pass.glsl");
     }
 
     @Override
     public void render(RenderContext ctx) {
+        ctx.gBuffer().bind();
+
         shader.useProgram();
         TextureManager.BLOCK_TEXTURES.bind(0);
 
         shader.setUniform("uProjection", ctx.camera().getProjectionMatrix());
         shader.setUniform("uView", ctx.camera().getViewMatrix());
-        shader.setUniform("uLightSpaceMatrix", ctx.lightMatrix());
-        shader.setUniform("uShadowMap", 1);
-        ctx.shadowMap().bindTexture(1);
 
         for (ChunkRenderable renderable : ctx.renderables()) {
             renderable.renderOpaque(ctx.world(), shader);
         }
 
         shader.unbind();
+        ctx.gBuffer().unbind(ctx.window().getWidth(), ctx.window().getHeight());
     }
+
 
     public void cleanup(){
         this.shader.destroy();

@@ -29,7 +29,7 @@ public class ChunkTransparentPass implements RenderPass {
 
     @Override
     public void init() {
-        this.shader = new Shader("/shaders/basic.glsl");
+        this.shader = new Shader("/shaders/transparent_pass.glsl");
     }
 
     @Override
@@ -40,9 +40,6 @@ public class ChunkTransparentPass implements RenderPass {
 
         shader.setUniform("uProjection", ctx.camera().getProjectionMatrix());
         shader.setUniform("uView", ctx.camera().getViewMatrix());
-        shader.setUniform("uLightSpaceMatrix", ctx.lightMatrix());
-        shader.setUniform("uShadowMap", 1);
-        ctx.shadowMap().bindTexture(1);
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
