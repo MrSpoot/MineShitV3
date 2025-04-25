@@ -45,6 +45,10 @@ public class ChunkRenderable {
             try {
                 ChunkMeshData data = pendingMesh.get();
 
+                if (this.opaqueMesh != null) {this.opaqueMesh.cleanup();}
+                if (this.transparentMesh != null) {this.transparentMesh.cleanup();}
+                if (this.shadowMesh != null) {this.shadowMesh.cleanup();}
+
                 this.opaqueMesh = new Mesh(data.opaqueVertexBuffer(), data.opaqueIndexBuffer(), 7);
                 this.transparentMesh = new Mesh(data.transparentVertexBuffer(), data.transparentIndexBuffer(), 7);
                 this.shadowMesh = new Mesh(data.shadowVertexBuffer(), data.shadowIndexBuffer(), 7);
