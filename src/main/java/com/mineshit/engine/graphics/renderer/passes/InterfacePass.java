@@ -1,14 +1,15 @@
-package com.mineshit.engine.graphics.renderer;
+package com.mineshit.engine.graphics.renderer.passes;
 
-import com.mineshit.engine.graphics.Camera;
+import com.mineshit.engine.graphics.renderer.utils.Mesh;
+import com.mineshit.engine.graphics.renderer.utils.RenderContext;
+import com.mineshit.engine.graphics.renderer.utils.Shader;
 import com.mineshit.engine.utils.Image;
 import com.mineshit.engine.utils.Statistic;
-import com.mineshit.game.world.World;
+import com.mineshit.engine.window.Window;
 import com.mineshit.game.world.interaction.HitResult;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector3i;
 import org.joml.Vector4f;
+import org.lwjgl.nanovg.NVGColor;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,21 +17,50 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Map;
 
+import static org.lwjgl.nanovg.NanoVG.*;
+import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_LEFT;
+import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_TOP;
+import static org.lwjgl.nanovg.NanoVG.nvgBeginPath;
+import static org.lwjgl.nanovg.NanoVG.nvgFillColor;
+import static org.lwjgl.nanovg.NanoVG.nvgFontFace;
+import static org.lwjgl.nanovg.NanoVG.nvgFontSize;
+import static org.lwjgl.nanovg.NanoVG.nvgLineTo;
+import static org.lwjgl.nanovg.NanoVG.nvgMoveTo;
+import static org.lwjgl.nanovg.NanoVG.nvgStroke;
+import static org.lwjgl.nanovg.NanoVG.nvgStrokeColor;
+import static org.lwjgl.nanovg.NanoVG.nvgStrokeWidth;
+import static org.lwjgl.nanovg.NanoVG.nvgText;
+import static org.lwjgl.nanovg.NanoVG.nvgTextAlign;
+import static org.lwjgl.nanovg.NanoVGGL3.*;
 import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL11C.GL_BACK;
+import static org.lwjgl.opengl.GL11C.glCullFace;
 import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
 import static org.lwjgl.opengl.GL13C.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13C.glActiveTexture;
 
-public class SelectionRenderer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SelectionRenderer.class);
+public class InterfacePass implements RenderPass {
+    private static final Logger LOGGER = LoggerFactory.getLogger(InterfacePass.class);
 
+    private long vg;
     private static Mesh mesh;
     private Shader shader;
     private int textureId;
 
-    public void init() {
-        LOGGER.info("Initializing SelectionRenderer");
+    @Override
+    public void init(){
+        vg = nvgCreate(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
+        if (vg == 0) {
+            throw new IllegalStateException("Failed to create NanoVG context");
+        }
+
+        int font = nvgCreateFont(vg, "sans", "src/main/resources/fonts/retro_gaming.ttf");
+        if (font == -1) {
+            throw new IllegalStateException("Could not load font");
+        }
+
         FloatBuffer vertexBuffer = MemoryUtil.memAllocFloat(8 * 3);
         vertexBuffer.put(new float[]{
                 0, 0, 0, // 0
@@ -83,10 +113,26 @@ public class SelectionRenderer {
         MemoryUtil.memFree(indexBuffer);
     }
 
-    public void render(Camera camera, World world, float alpha) {
+    @Override
+    public void render(RenderContext ctx){
+        renderSelection(ctx);
+
+        nvgBeginFrame(vg, ctx.window().getWidth(), ctx.window().getHeight(), 1);
+
+        drawCrosshair(ctx.window().getWidth(), ctx.window().getHeight());
+        renderStats(ctx.window().getWidth(), ctx.window().getHeight());
+
+        nvgEndFrame(vg);
+
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+    }
+
+    private void renderSelection(RenderContext ctx) {
         if (mesh == null) return;
 
-        HitResult r = world.getInteraction().getHitResult();
+        HitResult r = ctx.world().getInteraction().getHitResult();
         if (r == null || r.blockPos() == null) return;
 
         Matrix4f model = new Matrix4f()
@@ -98,8 +144,8 @@ public class SelectionRenderer {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         shader.useProgram();
-        shader.setUniform("uProjection", camera.getProjectionMatrix());
-        shader.setUniform("uView", camera.getViewMatrix());
+        shader.setUniform("uProjection", ctx.camera().getProjectionMatrix());
+        shader.setUniform("uView", ctx.camera().getViewMatrix());
         shader.setUniform("uModel", model);
 
         glEnable(GL_BLEND);
@@ -108,7 +154,7 @@ public class SelectionRenderer {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureId);
         shader.setUniform("uTexture", 0);
-        
+
         mesh.render();
 
         Statistic.increment("Drawcalls");
@@ -119,7 +165,47 @@ public class SelectionRenderer {
         glDisable(GL_BLEND);
     }
 
+    public void renderStats(int width, int height) {
+        Map<String, Object> stats = Statistic.getAll();
+
+        float x = 10, y = 10;
+        nvgFontSize(vg, 18.0f);
+        nvgFontFace(vg, "sans");
+        nvgFillColor(vg, color(1f, 1f, 1f, 1f));
+        nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
+
+        for (Map.Entry<String, Object> entry : stats.entrySet()) {
+            String line = entry.getKey() + ": " + entry.getValue();
+            nvgText(vg, x, y, line);
+            y += 20;
+        }
+    }
+
+
+    private void drawCrosshair(int width, int height) {
+        float size = 10.0f;
+
+        nvgBeginPath(vg);
+        nvgMoveTo(vg, width / 2f - size, height / 2f);
+        nvgLineTo(vg, width / 2f + size, height / 2f);
+        nvgMoveTo(vg, width / 2f, height / 2f - size);
+        nvgLineTo(vg, width / 2f, height / 2f + size);
+        nvgStrokeColor(vg, color(1f, 1f, 1f, 1f));
+        nvgStrokeWidth(vg, 1.5f);
+        nvgStroke(vg);
+    }
+
+    private NVGColor color(float r, float g, float b, float a) {
+        NVGColor color = NVGColor.create();
+        color.r(r).g(g).b(b).a(a);
+        return color;
+    }
+
+    @Override
     public void cleanup() {
+        if (vg != 0) {
+            nvgDelete(vg);
+        }
         if (mesh != null) mesh.cleanup();
         shader.destroy();
         if (textureId != 0) {
@@ -129,7 +215,7 @@ public class SelectionRenderer {
 
     private void createTexture(){
         Image img = new Image(new Vector4f(1.0f, 1.0f, 1.0f, 0.2f));
-        
+
         ByteBuffer buffer = img.getByteBuffer();
         int width = img.getWidth();
         int height = img.getHeight();
@@ -148,4 +234,3 @@ public class SelectionRenderer {
 
     }
 }
-

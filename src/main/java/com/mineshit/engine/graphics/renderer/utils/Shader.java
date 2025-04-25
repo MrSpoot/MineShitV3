@@ -1,4 +1,4 @@
-package com.mineshit.engine.graphics.renderer;
+package com.mineshit.engine.graphics.renderer.utils;
 
 import com.mineshit.engine.utils.FileReader;
 import lombok.Getter;
