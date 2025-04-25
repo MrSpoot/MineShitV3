@@ -36,6 +36,7 @@ public class WorldInteraction {
             BlockType.GRASS,
             BlockType.DIRT,
             BlockType.WOOD_LOG,
+            BlockType.PLANK,
             BlockType.WATER
     };
 
