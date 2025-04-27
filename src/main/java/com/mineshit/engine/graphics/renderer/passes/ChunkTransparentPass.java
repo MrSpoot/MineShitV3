@@ -3,6 +3,7 @@ package com.mineshit.engine.graphics.renderer.passes;
 import com.mineshit.engine.graphics.renderer.utils.RenderContext;
 import com.mineshit.engine.graphics.renderer.utils.Shader;
 import com.mineshit.engine.graphics.textures.TextureManager;
+import com.mineshit.engine.window.Window;
 import com.mineshit.game.world.utils.Chunk;
 import com.mineshit.game.world.utils.ChunkRenderable;
 import org.joml.Vector3f;
@@ -28,7 +29,7 @@ public class ChunkTransparentPass implements RenderPass {
     private Shader shader;
 
     @Override
-    public void init() {
+    public void init(Window window) {
         this.shader = new Shader("/shaders/transparent_pass.glsl");
     }
 

@@ -3,6 +3,7 @@ package com.mineshit.engine.graphics.renderer.passes;
 import com.mineshit.engine.graphics.renderer.utils.RenderContext;
 import com.mineshit.engine.graphics.renderer.utils.Shader;
 import com.mineshit.engine.utils.Statistic;
+import com.mineshit.engine.window.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +19,7 @@ public class SkyBoxPass implements RenderPass{
     private int vao;
 
     @Override
-    public void init() {
+    public void init(Window window) {
         this.shader = new Shader("/shaders/skybox.glsl");
         vao = glGenVertexArrays();
     }

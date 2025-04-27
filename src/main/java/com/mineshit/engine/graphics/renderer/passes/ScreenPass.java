@@ -3,6 +3,7 @@ package com.mineshit.engine.graphics.renderer.passes;
 import com.mineshit.engine.graphics.renderer.utils.GBuffer;
 import com.mineshit.engine.graphics.renderer.utils.RenderContext;
 import com.mineshit.engine.graphics.renderer.utils.Shader;
+import com.mineshit.engine.window.Window;
 import org.lwjgl.opengl.GL30;
 
 import static org.lwjgl.opengl.GL11C.*;
@@ -10,10 +11,10 @@ import static org.lwjgl.opengl.GL30C.*;
 
 public class ScreenPass implements RenderPass {
     private Shader shader;
-    private int vao; // Fullscreen quad VAO
+    private int vao;
 
     @Override
-    public void init() {
+    public void init(Window window) {
         this.shader = new Shader("/shaders/screen.glsl");
         vao = glGenVertexArrays();
     }
@@ -22,7 +23,7 @@ public class ScreenPass implements RenderPass {
     public void render(RenderContext ctx) {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, ctx.gBuffer().getFbo());
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, ctx.passes().getFbo());
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
         glBlitFramebuffer(

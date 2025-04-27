@@ -1,24 +1,25 @@
 package com.mineshit.engine.graphics.renderer.passes;
 
+import com.mineshit.engine.graphics.renderer.utils.FrameBuffer;
 import com.mineshit.engine.graphics.renderer.utils.RenderContext;
 import com.mineshit.engine.graphics.renderer.utils.Shader;
 import com.mineshit.engine.graphics.textures.TextureManager;
+import com.mineshit.engine.window.Window;
 import com.mineshit.game.world.utils.ChunkRenderable;
-import org.joml.Matrix4f;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ChunkOpaquePass implements RenderPass {
 
     private Shader shader;
+    private FrameBuffer frameBuffer;
 
-    public void init(){
+    public void init(Window window) {
         this.shader = new Shader("/shaders/opaque_pass.glsl");
+        this.frameBuffer = new FrameBuffer(window.getWidth(), window.getHeight());
     }
 
     @Override
     public void render(RenderContext ctx) {
-        ctx.gBuffer().bind();
+        frameBuffer.bind();
 
         shader.useProgram();
         TextureManager.BLOCK_TEXTURES.bind(0);
@@ -31,11 +32,13 @@ public class ChunkOpaquePass implements RenderPass {
         }
 
         shader.unbind();
-        ctx.gBuffer().unbind(ctx.window().getWidth(), ctx.window().getHeight());
+
+        frameBuffer.unbind(ctx.window().getWidth(), ctx.window().getHeight());
     }
 
 
     public void cleanup(){
         this.shader.destroy();
+        this.frameBuffer.cleanup();
     }
 }

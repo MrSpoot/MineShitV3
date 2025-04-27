@@ -50,7 +50,7 @@ public class InterfacePass implements RenderPass {
     private int textureId;
 
     @Override
-    public void init(){
+    public void init(Window window){
         vg = nvgCreate(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
         if (vg == 0) {
             throw new IllegalStateException("Failed to create NanoVG context");

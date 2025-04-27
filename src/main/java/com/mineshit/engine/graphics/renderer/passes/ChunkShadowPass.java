@@ -3,6 +3,7 @@ package com.mineshit.engine.graphics.renderer.passes;
 import com.mineshit.engine.graphics.renderer.utils.RenderContext;
 import com.mineshit.engine.graphics.renderer.utils.Shader;
 import com.mineshit.engine.graphics.textures.TextureManager;
+import com.mineshit.engine.window.Window;
 import com.mineshit.game.world.utils.ChunkRenderable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,7 @@ public class ChunkShadowPass implements RenderPass {
     private Shader shader;
 
     @Override
-    public void init() {
+    public void init(Window window) {
         this.shader = new Shader("/shaders/shadow.glsl");
     }
 

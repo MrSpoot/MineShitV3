@@ -3,7 +3,6 @@ package com.mineshit.engine.graphics.renderer;
 import com.mineshit.engine.graphics.Camera;
 import com.mineshit.engine.graphics.renderer.passes.RenderPass;
 import com.mineshit.engine.graphics.renderer.utils.ChunkMeshUpdater;
-import com.mineshit.engine.graphics.renderer.utils.GBuffer;
 import com.mineshit.engine.graphics.renderer.utils.RenderContext;
 import com.mineshit.engine.graphics.renderer.utils.ShadowMap;
 import com.mineshit.engine.input.InputManager;
@@ -14,8 +13,6 @@ import com.mineshit.game.world.utils.ChunkRenderable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -24,16 +21,14 @@ public class Pipeline {
 
     private Matrix4f lightSpaceMatrix;
     private final Map<Vector3i, ChunkRenderable> renderables = new HashMap<>();
-    private GBuffer gBuffer;
     private ShadowMap shadowMap;
 
     public void init(Window window) {
 
         this.lightSpaceMatrix = new Matrix4f();
-        this.gBuffer = new GBuffer(window.getWidth(), window.getHeight());
         this.shadowMap = new ShadowMap(4096,4096);
 
-        passes.forEach(RenderPass::init);
+        passes.forEach(pass -> pass.init(window));
     }
 
     public void render(Window window,
@@ -42,17 +37,12 @@ public class Pipeline {
                        Camera camera,
                        PlayerController player) {
 
-        if(window.getWidth() != gBuffer.getWidth() || window.getHeight() != gBuffer.getHeight()) {
-            this.gBuffer.cleanup();
-            this.gBuffer = new GBuffer(window.getWidth(), window.getHeight());
-        }
-
         world.getInteraction().update(player, input, world, camera);
         updateLightSpaceMatrix(player.getPosition(),world.getClock().getSunDirection());
 
         ChunkMeshUpdater.update(renderables,world,camera);
 
-        RenderContext ctx = new RenderContext(window,world,camera, player, lightSpaceMatrix, renderables.values(), gBuffer, shadowMap);
+        RenderContext ctx = new RenderContext(window,world,camera, player, lightSpaceMatrix,passes, renderables.values(), shadowMap);
 
         for (RenderPass pass : passes) {
             pass.render(ctx);
@@ -60,7 +50,6 @@ public class Pipeline {
     }
 
     public void cleanup() {
-        this.gBuffer.cleanup();
         this.shadowMap.cleanup();
         passes.forEach(RenderPass::cleanup);
 
