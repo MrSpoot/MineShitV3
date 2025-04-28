@@ -7,11 +7,7 @@ import com.mineshit.game.player.PlayerController;
 import com.mineshit.game.world.World;
 import com.mineshit.game.world.utils.ChunkRenderable;
 import org.joml.Matrix4f;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 public record RenderContext(
@@ -23,4 +19,16 @@ public record RenderContext(
         List<RenderPass> passes,
         Collection<ChunkRenderable> renderables,
         ShadowMap shadowMap
-) {}
+) {
+
+    @SuppressWarnings("unchecked")
+    public <T extends RenderPass> T getPass(Class<T> passClass) {
+        for (RenderPass pass : passes) {
+            if (pass.getClass().equals(passClass)) {
+                return (T) pass;
+            }
+        }
+        throw new IllegalArgumentException("No such pass: " + passClass.getName());
+    }
+
+}

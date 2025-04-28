@@ -11,27 +11,44 @@ void main() {
 //@endvs
 
 //@fs
+//@fs
 #version 460 core
 
 in vec2 vUV;
 out vec4 FragColor;
 
-uniform sampler2D uAlbedo;
-uniform sampler2D uDepth;
+uniform sampler2D uOpaqueColor;
+uniform sampler2D uOpaqueDepth;
+uniform sampler2D uTransparentColor;
+uniform sampler2D uTransparentDepth;
 
 void main() {
-    float depth = texture(uDepth, vUV).r;
-    vec4 albedo = texture(uAlbedo, vUV);
+    vec4 opaqueColor = texture(uOpaqueColor, vUV);
+    float opaqueDepth = texture(uOpaqueDepth, vUV).r;
 
-    if (depth >= 1.0) {
+    vec4 transparentColor = texture(uTransparentColor, vUV);
+    float transparentDepth = texture(uTransparentDepth, vUV).r;
+
+    if (opaqueDepth >= 1.0 && transparentDepth >= 1.0) {
         discard;
     }
 
-    if(albedo.a < 0.1) {
-        discard;
+    if (transparentDepth >= 1.0) {
+        FragColor = opaqueColor;
+        return;
     }
 
-    FragColor = albedo;
+    if (opaqueDepth >= 1.0) {
+        FragColor = transparentColor;
+        return;
+    }
+
+    if (transparentDepth < opaqueDepth) {
+        FragColor.rgb = mix(opaqueColor.rgb, transparentColor.rgb, transparentColor.a);
+        FragColor.a = 1.0;
+    } else {
+        FragColor = opaqueColor;
+    }
 }
-
 //@endfs
+

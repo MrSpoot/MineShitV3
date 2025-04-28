@@ -6,10 +6,13 @@ import com.mineshit.engine.graphics.renderer.utils.Shader;
 import com.mineshit.engine.graphics.textures.TextureManager;
 import com.mineshit.engine.window.Window;
 import com.mineshit.game.world.utils.ChunkRenderable;
+import lombok.Getter;
 
 public class ChunkOpaquePass implements RenderPass {
 
     private Shader shader;
+
+    @Getter
     private FrameBuffer frameBuffer;
 
     public void init(Window window) {

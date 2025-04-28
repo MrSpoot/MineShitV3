@@ -1,11 +1,13 @@
 package com.mineshit.engine.graphics.renderer.passes;
 
+import com.mineshit.engine.graphics.renderer.utils.FrameBuffer;
 import com.mineshit.engine.graphics.renderer.utils.RenderContext;
 import com.mineshit.engine.graphics.renderer.utils.Shader;
 import com.mineshit.engine.graphics.textures.TextureManager;
 import com.mineshit.engine.window.Window;
 import com.mineshit.game.world.utils.Chunk;
 import com.mineshit.game.world.utils.ChunkRenderable;
+import lombok.Getter;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.slf4j.Logger;
@@ -28,13 +30,19 @@ public class ChunkTransparentPass implements RenderPass {
 
     private Shader shader;
 
+    @Getter
+    private FrameBuffer frameBuffer;
+
     @Override
     public void init(Window window) {
         this.shader = new Shader("/shaders/transparent_pass.glsl");
+        this.frameBuffer = new FrameBuffer(window.getWidth(), window.getHeight());
     }
 
     @Override
     public void render(RenderContext ctx) {
+        frameBuffer.bind();
+
         shader.useProgram();
 
         TextureManager.BLOCK_TEXTURES.bind(0);
@@ -44,7 +52,7 @@ public class ChunkTransparentPass implements RenderPass {
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glDepthMask(false);
+        //glDepthMask(false);
 
         Collection<ChunkRenderable> sortedTransparent = ctx.renderables()
                 .stream()
@@ -62,8 +70,10 @@ public class ChunkTransparentPass implements RenderPass {
             cr.renderTransparent(ctx.world(), shader);
         }
 
-        glDepthMask(true);
+        //glDepthMask(true);
         glDisable(GL_BLEND);
+
+        frameBuffer.unbind(ctx.window().getWidth(), ctx.window().getHeight());
     }
 
     @Override
