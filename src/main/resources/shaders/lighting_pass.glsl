@@ -54,6 +54,7 @@ float calculateShadow(vec4 fragPosLightSpace, vec3 normal) {
     }
 
     shadow /= 9.0;
+
     return shadow;
 }
 
