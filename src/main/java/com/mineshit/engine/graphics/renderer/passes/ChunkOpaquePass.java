@@ -8,6 +8,8 @@ import com.mineshit.engine.window.Window;
 import com.mineshit.game.world.utils.ChunkRenderable;
 import lombok.Getter;
 
+import static org.lwjgl.opengl.GL11C.*;
+
 public class ChunkOpaquePass implements RenderPass {
 
     private Shader shader;
@@ -24,6 +26,10 @@ public class ChunkOpaquePass implements RenderPass {
     public void render(RenderContext ctx) {
         frameBuffer.bind();
 
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(true);
+        glDisable(GL_BLEND);
+
         shader.useProgram();
         TextureManager.BLOCK_TEXTURES.bind(0);
 
@@ -35,7 +41,6 @@ public class ChunkOpaquePass implements RenderPass {
         }
 
         shader.unbind();
-
         frameBuffer.unbind(ctx.window().getWidth(), ctx.window().getHeight());
     }
 

@@ -71,12 +71,10 @@ void main() {
     vec3 position = texture(uPosition, vUV).xyz;
     float depth = texture(uDepth, vUV).r;
 
-    // Si ce pixel est vide -> on discard
     if (depth >= 1.0 || albedo.a < 0.1) {
         discard;
     }
 
-    // Passage dans l'espace lumière
     vec4 fragPosLightSpace = uLightSpaceMatrix * vec4(position, 1.0);
 
     float shadow = calculateShadow(fragPosLightSpace, normal);
