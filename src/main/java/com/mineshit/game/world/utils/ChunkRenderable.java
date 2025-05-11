@@ -44,7 +44,7 @@ public class ChunkRenderable {
         if (pendingMesh != null && pendingMesh.isDone()) {
             try {
                 ChunkMeshData data = pendingMesh.get();
-
+              
                 cleanupMesh();
 
                 this.opaqueMesh = new Mesh(data.opaqueVertexBuffer(), data.opaqueIndexBuffer(), 7);
