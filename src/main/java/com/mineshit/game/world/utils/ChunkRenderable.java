@@ -2,8 +2,8 @@ package com.mineshit.game.world.utils;
 
 import com.mineshit.engine.game.ChunkMeshBuilder;
 import com.mineshit.engine.game.ChunkMeshData;
-import com.mineshit.engine.graphics.renderer.Mesh;
-import com.mineshit.engine.graphics.renderer.Shader;
+import com.mineshit.engine.graphics.renderer.utils.Mesh;
+import com.mineshit.engine.graphics.renderer.utils.Shader;
 import com.mineshit.engine.utils.FaceDirection;
 import com.mineshit.game.world.World;
 import lombok.Getter;
@@ -44,24 +44,13 @@ public class ChunkRenderable {
         if (pendingMesh != null && pendingMesh.isDone()) {
             try {
                 ChunkMeshData data = pendingMesh.get();
-
-                if (this.opaqueMesh != null) {this.opaqueMesh.cleanup();}
-                if (this.transparentMesh != null) {this.transparentMesh.cleanup();}
-                if (this.shadowMesh != null) {this.shadowMesh.cleanup();}
+              
+                cleanupMesh();
 
                 this.opaqueMesh = new Mesh(data.opaqueVertexBuffer(), data.opaqueIndexBuffer(), 7);
                 this.transparentMesh = new Mesh(data.transparentVertexBuffer(), data.transparentIndexBuffer(), 7);
                 this.shadowMesh = new Mesh(data.shadowVertexBuffer(), data.shadowIndexBuffer(), 7);
-
-
-                MemoryUtil.memFree(data.opaqueVertexBuffer());
-                MemoryUtil.memFree(data.opaqueIndexBuffer());
-
-                MemoryUtil.memFree(data.transparentVertexBuffer());
-                MemoryUtil.memFree(data.transparentIndexBuffer());
-
-                MemoryUtil.memFree(data.shadowVertexBuffer());
-                MemoryUtil.memFree(data.shadowIndexBuffer());
+                cleanupMeshDate(data);
 
                 if(chunk.getState() != ChunkState.DIRTY) {
                     chunk.setState(ChunkState.MESHED);
@@ -86,21 +75,12 @@ public class ChunkRenderable {
         ChunkMeshData data = ChunkMeshBuilder.buildBuffers(chunk, neighbors);
 
         if (data.canBeAdd()) {
-            if (opaqueMesh != null) opaqueMesh.cleanup();
+            cleanupMesh();
             this.opaqueMesh = new Mesh(data.opaqueVertexBuffer(), data.opaqueIndexBuffer(), 7);
-            if (transparentMesh != null) transparentMesh.cleanup();
             this.transparentMesh = new Mesh(data.transparentVertexBuffer(), data.transparentIndexBuffer(), 7);
-            if (shadowMesh != null) shadowMesh.cleanup();
             this.shadowMesh = new Mesh(data.shadowVertexBuffer(), data.shadowIndexBuffer(), 7);
         }
-
-        MemoryUtil.memFree(data.opaqueVertexBuffer());
-        MemoryUtil.memFree(data.opaqueIndexBuffer());
-        MemoryUtil.memFree(data.transparentVertexBuffer());
-        MemoryUtil.memFree(data.transparentIndexBuffer());
-        MemoryUtil.memFree(data.shadowVertexBuffer());
-        MemoryUtil.memFree(data.shadowIndexBuffer());
-
+        cleanupMeshDate(data);
         chunk.setState(ChunkState.MESHED);
     }
 
@@ -152,14 +132,27 @@ public class ChunkRenderable {
     }
 
     public void cleanup() {
-        if (opaqueMesh != null) opaqueMesh.cleanup();
-        if (transparentMesh != null) transparentMesh.cleanup();
-        if (shadowMesh != null) shadowMesh.cleanup();
+        cleanupMesh();
         if(pendingMesh != null) pendingMesh.cancel(true);
     }
 
     public static void cleanupStatic(){
         meshingExecutor.shutdownNow();
+    }
+
+    private void cleanupMesh(){
+        if(opaqueMesh != null) opaqueMesh.cleanup();
+        if(transparentMesh != null) transparentMesh.cleanup();
+        if(shadowMesh != null) shadowMesh.cleanup();
+    }
+
+    private void cleanupMeshDate(ChunkMeshData data){
+        MemoryUtil.memFree(data.opaqueVertexBuffer());
+        MemoryUtil.memFree(data.opaqueIndexBuffer());
+        MemoryUtil.memFree(data.transparentVertexBuffer());
+        MemoryUtil.memFree(data.transparentIndexBuffer());
+        MemoryUtil.memFree(data.shadowVertexBuffer());
+        MemoryUtil.memFree(data.shadowIndexBuffer());
     }
 
 }

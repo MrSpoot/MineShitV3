@@ -1,4 +1,4 @@
-package com.mineshit.engine.graphics.renderer;
+package com.mineshit.engine.graphics.renderer.utils;
 
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -65,5 +65,10 @@ public class ShadowMap {
     public void bindTexture(int unit) {
         glActiveTexture(GL_TEXTURE0 + unit);
         glBindTexture(GL_TEXTURE_2D, texture);
+    }
+
+    public void cleanup() {
+        glDeleteFramebuffers(fbo);
+        glDeleteTextures(texture);
     }
 }

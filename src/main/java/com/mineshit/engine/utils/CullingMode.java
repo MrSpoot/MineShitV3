@@ -5,6 +5,7 @@ public enum CullingMode {
     ALWAYS_CULL,
     CULL_IF_OPAQUE,
     CULL_IF_SAME,
-    CULL_IF_SOLID
+    CULL_IF_SOLID,
+    CULL_IF_SAME_OR_OPAQUE
 }
 

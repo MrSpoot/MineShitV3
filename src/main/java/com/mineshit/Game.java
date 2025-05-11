@@ -9,7 +9,9 @@ import com.mineshit.engine.utils.Statistic;
 import com.mineshit.engine.window.Window;
 import com.mineshit.game.player.PlayerController;
 import com.mineshit.game.world.World;
+import com.mineshit.game.world.utils.Chunk;
 import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +48,7 @@ public class Game {
     private void init() {
         LOGGER.info("Initializing");
 
-        window = new Window("MineShit", 1920, 1080 );
+        window = new Window("MineShit", 1280, 720 );
         window.create();
 
         camera = new Camera(70f, window.aspectRatio());
@@ -56,7 +58,7 @@ public class Game {
         renderTimer = new Timer(240);
 
         renderer = new Renderer();
-        renderer.init();
+        renderer.init(window);
 
         playerController = new PlayerController();
 
@@ -113,9 +115,18 @@ public class Game {
 
 
         Statistic.set("Camera Position","X : "+String.format("%.1f",camera.getPosition().x)+" | Y : "+String.format("%.1f",camera.getPosition().y)+" | Z : "+String.format("%.1f",camera.getPosition().z));
+        Statistic.set("Chunk Position","X : "+getChunkPosition(camera.getPosition()).x+" | Y : "+getChunkPosition(camera.getPosition()).y+" | Z : "+getChunkPosition(camera.getPosition()).z);
 
         world.update(camera.getPosition());
     }
+
+    public static Vector3i getChunkPosition(Vector3f worldPos) {
+        int chunkX = (int)Math.floor(worldPos.x / Chunk.SIZE);
+        int chunkY = (int)Math.floor(worldPos.y / Chunk.SIZE);
+        int chunkZ = (int)Math.floor(worldPos.z / Chunk.SIZE);
+        return new Vector3i(chunkX, chunkY, chunkZ);
+    }
+
 
 
     private void render(float alpha) {

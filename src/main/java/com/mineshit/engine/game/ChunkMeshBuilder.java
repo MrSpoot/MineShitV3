@@ -218,6 +218,8 @@ public class ChunkMeshBuilder {
             case CULL_IF_SOLID -> neighbor != BlockType.AIR
                     && (neighbor.getTransparencyType() == TransparencyType.OPAQUE
                     || neighbor.getTransparencyType() == TransparencyType.CUTOUT);
+            case CULL_IF_SAME_OR_OPAQUE -> (neighbor == current) || (neighbor != BlockType.AIR
+                    && neighbor.getTransparencyType() == TransparencyType.OPAQUE);
         };
     }
 

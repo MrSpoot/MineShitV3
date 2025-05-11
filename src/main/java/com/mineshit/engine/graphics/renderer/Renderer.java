@@ -1,6 +1,8 @@
 package com.mineshit.engine.graphics.renderer;
 
 import com.mineshit.engine.graphics.Camera;
+import com.mineshit.engine.graphics.renderer.passes.*;
+import com.mineshit.engine.graphics.renderer.utils.GBuffer;
 import com.mineshit.engine.input.InputManager;
 import com.mineshit.engine.utils.Statistic;
 import com.mineshit.engine.window.Window;
@@ -15,36 +17,34 @@ public class Renderer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Renderer.class);
 
-    private final SkyBoxRenderer skyBoxRenderer = new SkyBoxRenderer();
-    private final ChunkRenderer chunkRenderer = new ChunkRenderer();
-    private final SelectionRenderer selectionRenderer = new SelectionRenderer();
-    private final InterfaceRenderer interfaceRenderer = new InterfaceRenderer();
+    private final Pipeline pipeline = new Pipeline();
 
-    public void init() {
+    public void init(Window window) {
         LOGGER.info("Initializing Renderer");
-        skyBoxRenderer.init();
-        chunkRenderer.init();
-        selectionRenderer.init();
-        interfaceRenderer.init();
+
+        pipeline.addPass(new SkyBoxPass());
+        pipeline.addPass(new ChunkShadowPass());
+        pipeline.addPass(new ChunkOpaquePass());
+        pipeline.addPass(new SSAOPass());
+        pipeline.addPass(new ChunkTransparentPass());
+        pipeline.addPass(new LightingPass());
+        pipeline.addPass(new ScreenPass());
+        pipeline.addPass(new InterfacePass());
+
+        this.pipeline.init(window);
     }
 
     public void render(Window window, PlayerController playerController, InputManager input, Camera camera, World world, float alpha) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-        skyBoxRenderer.render(camera,world,alpha);
-        chunkRenderer.render(window,input, playerController, camera,world,alpha);
-        selectionRenderer.render(camera,world,alpha);
-        interfaceRenderer.render(window);
+        pipeline.render(window,input,world,camera, playerController);
 
         Statistic.set("Drawcalls",0L);
     }
 
     public void cleanup() {
-        skyBoxRenderer.cleanup();
-        chunkRenderer.cleanup();
-        selectionRenderer.cleanup();
-        interfaceRenderer.cleanup();
+        pipeline.cleanup();
     }
 }
 
