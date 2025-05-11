@@ -30,6 +30,7 @@ public class LightingPass implements RenderPass{
     @Override
     public void render(RenderContext ctx) {
 
+        SSAOPass ssaoPass = ctx.getPass(SSAOPass.class);
         ChunkOpaquePass opaquePass = ctx.getPass(ChunkOpaquePass.class);
 
         glBindFramebuffer(GL_READ_FRAMEBUFFER, opaquePass.getFrameBuffer().getFbo());
@@ -44,7 +45,7 @@ public class LightingPass implements RenderPass{
         frameBuffer.bind();
         shader.useProgram();
 
-        FrameBuffer.bindTexture(opaquePass.getFrameBuffer().getAlbedoTexture(), 0);
+        FrameBuffer.bindTexture(ssaoPass.getFrameBuffer().getAlbedoTexture(), 0);
         FrameBuffer.bindTexture(opaquePass.getFrameBuffer().getNormalTexture(), 1);
         FrameBuffer.bindTexture(opaquePass.getFrameBuffer().getPositionTexture(), 2);
         FrameBuffer.bindTexture(opaquePass.getFrameBuffer().getDepthTexture(), 3);

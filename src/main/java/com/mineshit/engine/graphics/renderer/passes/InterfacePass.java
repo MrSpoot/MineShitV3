@@ -10,10 +10,12 @@ import com.mineshit.game.world.interaction.HitResult;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.lwjgl.nanovg.NVGColor;
+import org.lwjgl.nanovg.NanoVG;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -56,7 +58,7 @@ public class InterfacePass implements RenderPass {
             throw new IllegalStateException("Failed to create NanoVG context");
         }
 
-        int font = nvgCreateFont(vg, "sans", "C:\\Users\\Betterfly\\Documents\\GitHub\\MineShitV3\\src\\main\\resources\\fonts\\retro_gaming.ttf");
+        int font = loadFont("sans", "/fonts/retro_gaming.ttf");
         if (font == -1) {
             throw new IllegalStateException("Could not load font");
         }
@@ -233,4 +235,28 @@ public class InterfacePass implements RenderPass {
         glBindTexture(GL_TEXTURE_2D, 0);
 
     }
+
+    private int loadFont(String fontName, String resourcePath) {
+        try (InputStream is = InterfacePass.class.getResourceAsStream(resourcePath)) {
+            if (is == null)
+                throw new RuntimeException("Font not found: " + resourcePath);
+
+            File tempFile = File.createTempFile("font_", ".ttf");
+            tempFile.deleteOnExit();
+
+            try (OutputStream os = new FileOutputStream(tempFile)) {
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    os.write(buffer, 0, bytesRead);
+                }
+            }
+
+            return NanoVG.nvgCreateFont(vg, fontName, tempFile.getAbsolutePath());
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load font: " + resourcePath, e);
+        }
+    }
+
 }
