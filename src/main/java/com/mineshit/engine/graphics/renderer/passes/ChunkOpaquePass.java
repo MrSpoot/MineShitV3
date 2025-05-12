@@ -14,17 +14,13 @@ public class ChunkOpaquePass implements RenderPass {
 
     private Shader shader;
 
-    @Getter
-    private FrameBuffer frameBuffer;
-
     public void init(Window window) {
         this.shader = new Shader("/shaders/opaque_pass.glsl");
-        this.frameBuffer = new FrameBuffer(window.getWidth(), window.getHeight());
     }
 
     @Override
     public void render(RenderContext ctx) {
-        frameBuffer.bind();
+        ctx.gbuffer().bind();
 
         glEnable(GL_DEPTH_TEST);
         glDepthMask(true);
@@ -41,12 +37,11 @@ public class ChunkOpaquePass implements RenderPass {
         }
 
         shader.unbind();
-        frameBuffer.unbind(ctx.window().getWidth(), ctx.window().getHeight());
+        ctx.gbuffer().unbind(ctx.window().getWidth(), ctx.window().getHeight());
     }
 
 
     public void cleanup(){
         this.shader.destroy();
-        this.frameBuffer.cleanup();
     }
 }

@@ -14,7 +14,6 @@ void main() {
 in vec2 vUV;
 layout(location = 0) out vec4 FragColor;
 
-uniform sampler2D uAlbedo;
 uniform sampler2D uPosition;
 uniform sampler2D uNormal;
 uniform vec2 uTexSize;
@@ -57,9 +56,6 @@ float doAO(vec2 sampleUV, vec3 centerPos, vec3 normal) {
 }
 
 void main() {
-
-    vec4 albedo = texture(uAlbedo,vUV);
-
     vec3 centerPos = getPosition(vUV);
     vec3 centerNormal = getNormal(vUV);
 
@@ -91,10 +87,9 @@ void main() {
 
     ao = 1.0 - ao * (1.0 / float(SAMPLES)) * INTENSITY;
 
-    // Adoucit le SSAO à longue distance
     float distanceFade = smoothstep(5.0, 15.0, depth);
     ao = mix(ao, 1.0, distanceFade);
 
-    FragColor = albedo * vec4(vec3(ao), 1.0);
+    FragColor = vec4(vec3(ao), 1.0);
 }
 //@endfs

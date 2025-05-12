@@ -1,10 +1,9 @@
 package com.mineshit.engine.graphics.renderer.utils;
 
 import lombok.Getter;
+import org.lwjgl.opengl.GL30C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL13C.GL_CLAMP_TO_BORDER;
@@ -20,7 +19,7 @@ public class ShadowMap {
 
     private int fbo;
     @Getter
-    private int texture;
+    private Texture texture;
 
     public ShadowMap(int width, int height) {
         this.width = width;
@@ -28,19 +27,17 @@ public class ShadowMap {
 
         fbo = glGenFramebuffers();
 
-        texture = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
-                width, height, 0,
-                GL_DEPTH_COMPONENT, GL_FLOAT, (ByteBuffer) null);
+        texture = new Texture(width, height, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
+        glBindTexture(GL_TEXTURE_2D, texture.getTextureId());
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
         glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, new float[]{1.0f, 1.0f, 1.0f, 1.0f});
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture, 0);
+        texture.attach(GL_DEPTH_ATTACHMENT);
         glDrawBuffer(GL_NONE);
         glReadBuffer(GL_NONE);
 
@@ -63,12 +60,11 @@ public class ShadowMap {
     }
 
     public void bindTexture(int unit) {
-        glActiveTexture(GL_TEXTURE0 + unit);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        texture.bind(unit);
     }
 
     public void cleanup() {
         glDeleteFramebuffers(fbo);
-        glDeleteTextures(texture);
+        texture.cleanup();
     }
 }

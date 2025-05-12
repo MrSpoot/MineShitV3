@@ -2,9 +2,7 @@ package com.mineshit.engine.graphics.renderer;
 
 import com.mineshit.engine.graphics.Camera;
 import com.mineshit.engine.graphics.renderer.passes.RenderPass;
-import com.mineshit.engine.graphics.renderer.utils.ChunkMeshUpdater;
-import com.mineshit.engine.graphics.renderer.utils.RenderContext;
-import com.mineshit.engine.graphics.renderer.utils.ShadowMap;
+import com.mineshit.engine.graphics.renderer.utils.*;
 import com.mineshit.engine.input.InputManager;
 import com.mineshit.engine.window.Window;
 import com.mineshit.game.player.PlayerController;
@@ -16,17 +14,28 @@ import org.joml.Vector3i;
 
 import java.util.*;
 
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL30C.GL_RGB16F;
+
 public class Pipeline {
     private final List<RenderPass> passes = new LinkedList<>();
 
     private Matrix4f lightSpaceMatrix;
     private final Map<Vector3i, ChunkRenderable> renderables = new HashMap<>();
     private ShadowMap shadowMap;
+    private SsaoMap ssaoMap;
+    private LightingMap lightingMap;
+    private SkyboxMap skyboxMap;
+    private GBuffer gbuffer;
 
     public void init(Window window) {
 
         this.lightSpaceMatrix = new Matrix4f();
         this.shadowMap = new ShadowMap(4096,4096);
+        this.ssaoMap= new SsaoMap(window.getWidth(), window.getHeight());
+        this.lightingMap = new LightingMap(window.getWidth(), window.getHeight());
+        this.skyboxMap = new SkyboxMap(window.getWidth(), window.getHeight());
+        this.gbuffer = new GBuffer(window.getWidth(), window.getHeight());
 
         passes.forEach(pass -> pass.init(window));
     }
@@ -37,12 +46,26 @@ public class Pipeline {
                        Camera camera,
                        PlayerController player) {
 
+        if (gbuffer.getWidth() != window.getWidth() || gbuffer.getHeight() != window.getHeight()) {
+            gbuffer.cleanup();
+            gbuffer = new GBuffer(window.getWidth(), window.getHeight());
+
+            ssaoMap.cleanup();
+            ssaoMap= new SsaoMap(window.getWidth(), window.getHeight());
+
+            lightingMap.cleanup();
+            lightingMap= new LightingMap(window.getWidth(), window.getHeight());
+
+            skyboxMap.cleanup();
+            skyboxMap= new SkyboxMap(window.getWidth(), window.getHeight());
+        }
+
         world.getInteraction().update(player, input, world, camera);
         updateLightSpaceMatrix(player.getPosition(),world.getClock().getSunDirection());
 
         ChunkMeshUpdater.update(renderables,world,camera);
 
-        RenderContext ctx = new RenderContext(window,world,camera, player, lightSpaceMatrix,passes, renderables.values(), shadowMap);
+        RenderContext ctx = new RenderContext(window,world,camera, player, lightSpaceMatrix,renderables.values(),gbuffer, shadowMap,ssaoMap,lightingMap,skyboxMap);
 
         for (RenderPass pass : passes) {
             pass.render(ctx);
@@ -51,9 +74,12 @@ public class Pipeline {
 
     public void cleanup() {
         this.shadowMap.cleanup();
+        this.gbuffer.cleanup();
+        this.ssaoMap.cleanup();
+        this.lightingMap.cleanup();
         passes.forEach(RenderPass::cleanup);
 
-        for(ChunkRenderable chunk : renderables.values()) {
+        for (ChunkRenderable chunk : renderables.values()) {
             chunk.cleanup();
         }
 
