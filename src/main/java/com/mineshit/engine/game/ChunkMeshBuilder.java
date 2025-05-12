@@ -103,7 +103,7 @@ public class ChunkMeshBuilder {
                             transparentIndexOffset += 4;
                             transparentVertexCount += 4;
 
-                            appendFaceToBuffer(shadowVertexBuffer, shadowIndexBuffer, faceVertices, faceId, block, shadowIndexOffset);
+                            //appendFaceToBuffer(shadowVertexBuffer, shadowIndexBuffer, faceVertices, faceId, block, shadowIndexOffset);
                             shadowIndexOffset += 4;
                             shadowVertexCount += 4;
                         }

@@ -16,7 +16,6 @@ layout(location = 0) out vec4 FragColor;
 
 uniform sampler2D uPosition;
 uniform sampler2D uNormal;
-uniform vec2 uTexSize;
 uniform vec3 uCameraPos;
 
 

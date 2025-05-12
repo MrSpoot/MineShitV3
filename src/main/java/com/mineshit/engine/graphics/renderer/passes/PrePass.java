@@ -68,7 +68,6 @@ public class PrePass implements RenderPass{
 
         ssaoShader.setUniform("uNormal", 0);
         ssaoShader.setUniform("uPosition", 1);
-        ssaoShader.setUniform("uTexSize", new Vector2f(ctx.window().getWidth(), ctx.window().getHeight()));
         ssaoShader.setUniform("uCameraPos", ctx.camera().getPosition());
 
         glBindVertexArray(vao);

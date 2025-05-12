@@ -16,7 +16,6 @@ void main() {
 in vec2 vUV;
 layout(location = 0) out vec4 FragColor;
 
-uniform sampler2D uAlbedo;
 uniform sampler2D uNormal;
 uniform sampler2D uPosition;
 uniform sampler2D uSSAO;
@@ -58,7 +57,6 @@ vec3 getSunColor(float height) {
 }
 
 void main() {
-    vec4 albedo = texture(uAlbedo, vUV);
     vec3 normal = normalize(texture(uNormal, vUV).xyz);
     vec3 position = texture(uPosition, vUV).xyz;
     float ssao = texture(uSSAO, vUV).r;
@@ -69,7 +67,7 @@ void main() {
     float sunHeight = clamp(-uSunDir.y, 0.0, 1.0);
     float lightIntensity = smoothstep(0.0, 0.3, sunHeight);
     vec3 sunColor = getSunColor(-uSunDir.y);
-    vec3 lightColor = albedo.rgb * sunColor;
+    vec3 lightColor = sunColor;
     float sunDot = max(dot(normal, -normalize(uSunDir)), 0.5);
 
     float diffuse = sunDot * lightIntensity;

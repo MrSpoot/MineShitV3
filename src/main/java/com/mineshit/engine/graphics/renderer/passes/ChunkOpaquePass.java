@@ -1,12 +1,10 @@
 package com.mineshit.engine.graphics.renderer.passes;
 
-import com.mineshit.engine.graphics.renderer.utils.FrameBuffer;
 import com.mineshit.engine.graphics.renderer.utils.RenderContext;
 import com.mineshit.engine.graphics.renderer.utils.Shader;
 import com.mineshit.engine.graphics.textures.TextureManager;
 import com.mineshit.engine.window.Window;
 import com.mineshit.game.world.utils.ChunkRenderable;
-import lombok.Getter;
 
 import static org.lwjgl.opengl.GL11C.*;
 

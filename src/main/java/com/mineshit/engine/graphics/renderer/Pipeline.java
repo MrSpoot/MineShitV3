@@ -14,9 +14,6 @@ import org.joml.Vector3i;
 
 import java.util.*;
 
-import static org.lwjgl.opengl.GL11C.*;
-import static org.lwjgl.opengl.GL30C.GL_RGB16F;
-
 public class Pipeline {
     private final List<RenderPass> passes = new LinkedList<>();
 

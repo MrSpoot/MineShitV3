@@ -14,7 +14,7 @@ public enum BlockType {
     WOOD_LOG("/textures/wood_log_full.png", 1.0f, TransparencyType.OPAQUE, CullingMode.CULL_IF_OPAQUE),
     PLANK("/textures/plank_full.png", 1.0f, TransparencyType.OPAQUE, CullingMode.CULL_IF_OPAQUE),
     LEAVE("/textures/leave_full.png", 1.0f, TransparencyType.CUTOUT, CullingMode.CULL_IF_OPAQUE),
-    WATER("/textures/water_full.png", 1.0f, TransparencyType.TRANSLUCENT, CullingMode.CULL_IF_SAME_OR_OPAQUE),
+    WATER("/textures/water_full.png", 1.0f, TransparencyType.TRANSLUCENT, CullingMode.CULL_IF_SAME),
     TEST("/textures/test_full.png", 1.0f, TransparencyType.OPAQUE, CullingMode.CULL_IF_OPAQUE);
 
 

@@ -13,18 +13,16 @@ public class SkyBoxPass implements RenderPass {
 
     private Shader shader;
     private int vao;
-    private SkyboxMap skyboxMap;
 
     @Override
     public void init(Window window) {
         this.shader = new Shader("/shaders/skybox.glsl");
-        this.skyboxMap = new SkyboxMap(window.getWidth(), window.getHeight());
         vao = glGenVertexArrays();
     }
 
     @Override
     public void render(RenderContext ctx) {
-        skyboxMap.bind();
+        ctx.skyboxMap().bind();
 
         shader.useProgram();
         shader.setUniform("timeOfDay", ctx.world().getClock().getWorldTime());
@@ -39,17 +37,12 @@ public class SkyBoxPass implements RenderPass {
         glBindVertexArray(0);
 
         shader.unbind();
-        skyboxMap.unbind(ctx.window().getWidth(), ctx.window().getHeight());
+        ctx.skyboxMap().unbind(ctx.window().getWidth(), ctx.window().getHeight());
     }
 
     @Override
     public void cleanup() {
         this.shader.destroy();
-        skyboxMap.cleanup();
         glDeleteVertexArrays(vao);
-    }
-
-    public SkyboxMap getSkyboxMap() {
-        return skyboxMap;
     }
 }

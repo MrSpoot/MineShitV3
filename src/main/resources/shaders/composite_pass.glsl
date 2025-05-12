@@ -28,10 +28,14 @@ void main() {
     vec3 finalColor = albedo * lighting;
 
     if (depth >= 1.0) {
-        vec3 skyColor = texture(uSkybox, vUV).rgb;
-        finalColor = skyColor;
+        finalColor = texture(uSkybox, vUV).rgb;
+    }
+
+    if(depth < 1.0){
+        gl_FragDepth = depth;
     }
 
     FragColor = vec4(finalColor, 1.0);
+
 }
 //@endfs
