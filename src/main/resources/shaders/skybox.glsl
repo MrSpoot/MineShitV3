@@ -21,7 +21,7 @@ uniform float aspect;
 uniform float timeOfDay;
 
 in vec2 vUv;
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
 
 vec3 vNightColor   = vec3(0.15, 0.3, 0.6);
 vec3 vHorizonColor = vec3(0.6, 0.3, 0.4);

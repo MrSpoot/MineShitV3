@@ -16,19 +16,10 @@ public record RenderContext(
         Camera camera,
         PlayerController player,
         Matrix4f lightMatrix,
-        List<RenderPass> passes,
         Collection<ChunkRenderable> renderables,
-        ShadowMap shadowMap
-) {
-
-    @SuppressWarnings("unchecked")
-    public <T extends RenderPass> T getPass(Class<T> passClass) {
-        for (RenderPass pass : passes) {
-            if (pass.getClass().equals(passClass)) {
-                return (T) pass;
-            }
-        }
-        throw new IllegalArgumentException("No such pass: " + passClass.getName());
-    }
-
-}
+        GBuffer gbuffer,
+        ShadowMap shadowMap,
+        SsaoMap ssaoMap,
+        LightingMap lightingMap,
+        SkyboxMap skyboxMap
+) {}
