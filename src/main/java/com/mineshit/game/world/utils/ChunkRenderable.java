@@ -7,9 +7,14 @@ import com.mineshit.engine.graphics.renderer.utils.Shader;
 import com.mineshit.engine.utils.FaceDirection;
 import com.mineshit.game.world.World;
 import lombok.Getter;
+import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -124,6 +129,16 @@ public class ChunkRenderable {
         shadowShader.setUniform("uLightSpaceMatrix", lightSpaceMatrix);
 
         shadowMesh.render();
+    }
+
+    public static List<ChunkRenderable> getRenderableChunksFilterByFrustum(Collection<ChunkRenderable> chunks, Matrix4f frustumMatrix){
+        FrustumIntersection intersection = new FrustumIntersection(frustumMatrix);
+
+        return chunks.stream().filter((c) -> {
+            Vector3f min = c.getChunk().getWorldMin();
+            Vector3f max = c.getChunk().getWorldMax();
+            return intersection.testAab(min.x, min.y, min.z, max.x, max.y, max.z);
+        }).toList();
     }
 
 

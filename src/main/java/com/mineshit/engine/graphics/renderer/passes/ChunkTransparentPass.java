@@ -6,6 +6,7 @@ import com.mineshit.engine.graphics.textures.TextureManager;
 import com.mineshit.engine.window.Window;
 import com.mineshit.game.world.utils.Chunk;
 import com.mineshit.game.world.utils.ChunkRenderable;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,9 @@ public class ChunkTransparentPass implements RenderPass {
         shader.setUniform("uProjection", ctx.camera().getProjectionMatrix());
         shader.setUniform("uView", ctx.camera().getViewMatrix());
 
-        Collection<ChunkRenderable> sortedTransparent = ctx.renderables()
+        Matrix4f viewProj = new Matrix4f(ctx.camera().getProjectionMatrix()).mul(ctx.camera().getViewMatrix());
+
+        Collection<ChunkRenderable> sortedTransparent = ChunkRenderable.getRenderableChunksFilterByFrustum(ctx.renderables(),viewProj)
                 .stream()
                 .filter(ChunkRenderable::hasTransparent)
                 .sorted(Comparator.comparingDouble(cr -> {

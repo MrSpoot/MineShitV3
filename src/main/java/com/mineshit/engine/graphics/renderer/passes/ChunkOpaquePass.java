@@ -5,6 +5,11 @@ import com.mineshit.engine.graphics.renderer.utils.Shader;
 import com.mineshit.engine.graphics.textures.TextureManager;
 import com.mineshit.engine.window.Window;
 import com.mineshit.game.world.utils.ChunkRenderable;
+import org.joml.FrustumIntersection;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+
+import java.util.List;
 
 import static org.lwjgl.opengl.GL11C.*;
 
@@ -30,7 +35,9 @@ public class ChunkOpaquePass implements RenderPass {
         shader.setUniform("uProjection", ctx.camera().getProjectionMatrix());
         shader.setUniform("uView", ctx.camera().getViewMatrix());
 
-        for (ChunkRenderable renderable : ctx.renderables()) {
+        Matrix4f viewProj = new Matrix4f(ctx.camera().getProjectionMatrix()).mul(ctx.camera().getViewMatrix());
+
+        for (ChunkRenderable renderable : ChunkRenderable.getRenderableChunksFilterByFrustum(ctx.renderables(),viewProj)) {
             renderable.renderOpaque(ctx.world(), shader);
         }
 
