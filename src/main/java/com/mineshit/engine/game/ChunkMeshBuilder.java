@@ -3,6 +3,7 @@ package com.mineshit.engine.game;
 import com.mineshit.engine.utils.FaceDirection;
 import com.mineshit.game.world.utils.BlockType;
 import com.mineshit.game.world.utils.Chunk;
+import com.mineshit.game.world.utils.MeshType;
 import com.mineshit.game.world.utils.TransparencyType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,9 @@ public class ChunkMeshBuilder {
         FloatBuffer shadowVertexBuffer = memAllocFloat(maxFaces * 4 * 7); // 7 floats per vertex now (added faceId)
         IntBuffer shadowIndexBuffer = memAllocInt(maxFaces * 6);
 
+        FloatBuffer crossInstanceBuffer = memAllocFloat(Chunk.SIZE * Chunk.SIZE * Chunk.SIZE * 4); // position.xyz + texture index
+        int crossInstanceCount = 0;
+
         int opaqueIndexOffset = 0;
         int opaqueVertexCount = 0;
 
@@ -55,110 +59,118 @@ public class ChunkMeshBuilder {
 
                     BlockType blockType = BlockType.fromId(block);
 
-                    if(blockType.getTransparencyType().equals(TransparencyType.TRANSLUCENT) || blockType.getTransparencyType().equals(TransparencyType.TRANSPARENT)) {
-                        for (FaceDirection face : FaceDirection.values()) {
-                            int nx = x + face.getOffsetX();
-                            int ny = y + face.getOffsetY();
-                            int nz = z + face.getOffsetZ();
-
-                            short neighborBlock = 0;
-
-                            if (chunk.isOutOfBounds(nx, ny, nz)) {
-                                Chunk neighbor = neighbors.get(face);
-                                if (neighbor != null) {
-                                    int ox = (nx + Chunk.SIZE) % Chunk.SIZE;
-                                    int oy = (ny + Chunk.SIZE) % Chunk.SIZE;
-                                    int oz = (nz + Chunk.SIZE) % Chunk.SIZE;
-                                    if (neighbor.isInBounds(ox, oy, oz)) {
-                                        neighborBlock = neighbor.getBlock(ox, oy, oz);
-                                    }
-                                }
-                            } else {
-                                neighborBlock = chunk.getBlock(nx, ny, nz);
-                            }
-
-                            BlockType neighborBlockType = BlockType.fromId(neighborBlock);
-
-                            if (shouldCullFace(blockType,neighborBlockType)) continue;
-
-                            float[] faceVertices = getFaceVertices(x, y, z, face);
-                            int faceId = getFaceId(face);
-
-                            for (int i = 0; i < 4; i++) {
-                                transparentVertexBuffer.put(faceVertices[i * 3]);
-                                transparentVertexBuffer.put(faceVertices[i * 3 + 1]);
-                                transparentVertexBuffer.put(faceVertices[i * 3 + 2]);
-                                transparentVertexBuffer.put(UVS[i][0]);
-                                transparentVertexBuffer.put(UVS[i][1]);
-                                transparentVertexBuffer.put(block);
-                                transparentVertexBuffer.put(faceId);
-                            }
-
-                            transparentIndexBuffer.put(transparentIndexOffset);
-                            transparentIndexBuffer.put(transparentIndexOffset + 1);
-                            transparentIndexBuffer.put(transparentIndexOffset + 2);
-                            transparentIndexBuffer.put(transparentIndexOffset + 2);
-                            transparentIndexBuffer.put(transparentIndexOffset + 3);
-                            transparentIndexBuffer.put(transparentIndexOffset);
-                            transparentIndexOffset += 4;
-                            transparentVertexCount += 4;
-
-                            //appendFaceToBuffer(shadowVertexBuffer, shadowIndexBuffer, faceVertices, faceId, block, shadowIndexOffset);
-                            shadowIndexOffset += 4;
-                            shadowVertexCount += 4;
-                        }
-
+                    if(blockType.getMeshType().equals(MeshType.CROSS)){
+                        crossInstanceBuffer.put(x + 0.5f);
+                        crossInstanceBuffer.put(y);
+                        crossInstanceBuffer.put(z + 0.5f);
+                        crossInstanceBuffer.put(block);
+                        crossInstanceCount++;
                     }else{
-                        for (FaceDirection face : FaceDirection.values()) {
-                            int nx = x + face.getOffsetX();
-                            int ny = y + face.getOffsetY();
-                            int nz = z + face.getOffsetZ();
+                        if(blockType.getTransparencyType().equals(TransparencyType.TRANSLUCENT) || blockType.getTransparencyType().equals(TransparencyType.TRANSPARENT)) {
+                            for (FaceDirection face : FaceDirection.values()) {
+                                int nx = x + face.getOffsetX();
+                                int ny = y + face.getOffsetY();
+                                int nz = z + face.getOffsetZ();
 
-                            short neighborBlock = 0;
+                                short neighborBlock = 0;
 
-                            if (chunk.isOutOfBounds(nx, ny, nz)) {
-                                Chunk neighbor = neighbors.get(face);
-                                if (neighbor != null) {
-                                    int ox = (nx + Chunk.SIZE) % Chunk.SIZE;
-                                    int oy = (ny + Chunk.SIZE) % Chunk.SIZE;
-                                    int oz = (nz + Chunk.SIZE) % Chunk.SIZE;
-                                    if (neighbor.isInBounds(ox, oy, oz)) {
-                                        neighborBlock = neighbor.getBlock(ox, oy, oz);
+                                if (chunk.isOutOfBounds(nx, ny, nz)) {
+                                    Chunk neighbor = neighbors.get(face);
+                                    if (neighbor != null) {
+                                        int ox = (nx + Chunk.SIZE) % Chunk.SIZE;
+                                        int oy = (ny + Chunk.SIZE) % Chunk.SIZE;
+                                        int oz = (nz + Chunk.SIZE) % Chunk.SIZE;
+                                        if (neighbor.isInBounds(ox, oy, oz)) {
+                                            neighborBlock = neighbor.getBlock(ox, oy, oz);
+                                        }
                                     }
+                                } else {
+                                    neighborBlock = chunk.getBlock(nx, ny, nz);
                                 }
-                            } else {
-                                neighborBlock = chunk.getBlock(nx, ny, nz);
+
+                                BlockType neighborBlockType = BlockType.fromId(neighborBlock);
+
+                                if (shouldCullFace(blockType,neighborBlockType)) continue;
+
+                                float[] faceVertices = getFaceVertices(x, y, z, face);
+                                int faceId = getFaceId(face);
+
+                                for (int i = 0; i < 4; i++) {
+                                    transparentVertexBuffer.put(faceVertices[i * 3]);
+                                    transparentVertexBuffer.put(faceVertices[i * 3 + 1]);
+                                    transparentVertexBuffer.put(faceVertices[i * 3 + 2]);
+                                    transparentVertexBuffer.put(UVS[i][0]);
+                                    transparentVertexBuffer.put(UVS[i][1]);
+                                    transparentVertexBuffer.put(block);
+                                    transparentVertexBuffer.put(faceId);
+                                }
+
+                                transparentIndexBuffer.put(transparentIndexOffset);
+                                transparentIndexBuffer.put(transparentIndexOffset + 1);
+                                transparentIndexBuffer.put(transparentIndexOffset + 2);
+                                transparentIndexBuffer.put(transparentIndexOffset + 2);
+                                transparentIndexBuffer.put(transparentIndexOffset + 3);
+                                transparentIndexBuffer.put(transparentIndexOffset);
+                                transparentIndexOffset += 4;
+                                transparentVertexCount += 4;
+
+                                //appendFaceToBuffer(shadowVertexBuffer, shadowIndexBuffer, faceVertices, faceId, block, shadowIndexOffset);
+                                shadowIndexOffset += 4;
+                                shadowVertexCount += 4;
                             }
 
-                            BlockType neighborBlockType = BlockType.fromId(neighborBlock);
+                        }else{
+                            for (FaceDirection face : FaceDirection.values()) {
+                                int nx = x + face.getOffsetX();
+                                int ny = y + face.getOffsetY();
+                                int nz = z + face.getOffsetZ();
 
-                            if (shouldCullFace(blockType,neighborBlockType)) continue;
+                                short neighborBlock = 0;
 
-                            float[] faceVertices = getFaceVertices(x, y, z, face);
-                            int faceId = getFaceId(face);
+                                if (chunk.isOutOfBounds(nx, ny, nz)) {
+                                    Chunk neighbor = neighbors.get(face);
+                                    if (neighbor != null) {
+                                        int ox = (nx + Chunk.SIZE) % Chunk.SIZE;
+                                        int oy = (ny + Chunk.SIZE) % Chunk.SIZE;
+                                        int oz = (nz + Chunk.SIZE) % Chunk.SIZE;
+                                        if (neighbor.isInBounds(ox, oy, oz)) {
+                                            neighborBlock = neighbor.getBlock(ox, oy, oz);
+                                        }
+                                    }
+                                } else {
+                                    neighborBlock = chunk.getBlock(nx, ny, nz);
+                                }
 
-                            for (int i = 0; i < 4; i++) {
-                                opaqueVertexBuffer.put(faceVertices[i * 3]);
-                                opaqueVertexBuffer.put(faceVertices[i * 3 + 1]);
-                                opaqueVertexBuffer.put(faceVertices[i * 3 + 2]);
-                                opaqueVertexBuffer.put(UVS[i][0]);
-                                opaqueVertexBuffer.put(UVS[i][1]);
-                                opaqueVertexBuffer.put(block);
-                                opaqueVertexBuffer.put(faceId);
+                                BlockType neighborBlockType = BlockType.fromId(neighborBlock);
+
+                                if (shouldCullFace(blockType,neighborBlockType)) continue;
+
+                                float[] faceVertices = getFaceVertices(x, y, z, face);
+                                int faceId = getFaceId(face);
+
+                                for (int i = 0; i < 4; i++) {
+                                    opaqueVertexBuffer.put(faceVertices[i * 3]);
+                                    opaqueVertexBuffer.put(faceVertices[i * 3 + 1]);
+                                    opaqueVertexBuffer.put(faceVertices[i * 3 + 2]);
+                                    opaqueVertexBuffer.put(UVS[i][0]);
+                                    opaqueVertexBuffer.put(UVS[i][1]);
+                                    opaqueVertexBuffer.put(block);
+                                    opaqueVertexBuffer.put(faceId);
+                                }
+
+                                opaqueIndexBuffer.put(opaqueIndexOffset);
+                                opaqueIndexBuffer.put(opaqueIndexOffset + 1);
+                                opaqueIndexBuffer.put(opaqueIndexOffset + 2);
+                                opaqueIndexBuffer.put(opaqueIndexOffset + 2);
+                                opaqueIndexBuffer.put(opaqueIndexOffset + 3);
+                                opaqueIndexBuffer.put(opaqueIndexOffset);
+                                opaqueIndexOffset += 4;
+                                opaqueVertexCount += 4;
+
+                                appendFaceToBuffer(shadowVertexBuffer, shadowIndexBuffer, faceVertices, faceId, block, shadowIndexOffset);
+                                shadowIndexOffset += 4;
+                                shadowVertexCount += 4;
                             }
-
-                            opaqueIndexBuffer.put(opaqueIndexOffset);
-                            opaqueIndexBuffer.put(opaqueIndexOffset + 1);
-                            opaqueIndexBuffer.put(opaqueIndexOffset + 2);
-                            opaqueIndexBuffer.put(opaqueIndexOffset + 2);
-                            opaqueIndexBuffer.put(opaqueIndexOffset + 3);
-                            opaqueIndexBuffer.put(opaqueIndexOffset);
-                            opaqueIndexOffset += 4;
-                            opaqueVertexCount += 4;
-
-                            appendFaceToBuffer(shadowVertexBuffer, shadowIndexBuffer, faceVertices, faceId, block, shadowIndexOffset);
-                            shadowIndexOffset += 4;
-                            shadowVertexCount += 4;
                         }
                     }
                 }
@@ -174,7 +186,9 @@ public class ChunkMeshBuilder {
         shadowVertexBuffer.flip();
         shadowIndexBuffer.flip();
 
-        return new ChunkMeshData(opaqueVertexBuffer, opaqueIndexBuffer, opaqueVertexCount, transparentVertexBuffer, transparentIndexBuffer, transparentVertexCount, shadowVertexBuffer, shadowIndexBuffer, shadowVertexCount);
+        crossInstanceBuffer.flip();
+
+        return new ChunkMeshData(opaqueVertexBuffer, opaqueIndexBuffer, opaqueVertexCount, transparentVertexBuffer, transparentIndexBuffer, transparentVertexCount, shadowVertexBuffer, shadowIndexBuffer, shadowVertexCount, crossInstanceBuffer, crossInstanceCount);
     }
 
     private static void appendFaceToBuffer(
