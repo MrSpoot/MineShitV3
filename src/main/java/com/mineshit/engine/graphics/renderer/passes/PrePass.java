@@ -41,6 +41,9 @@ public class PrePass implements RenderPass{
     private void shadowMap(RenderContext ctx){
         glDisable(GL_CULL_FACE);
 
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(4.0f, 8.0f); // Bias stable voxel
+
         ctx.shadowMap().bind();
 
         shadowShader.useProgram();
@@ -55,6 +58,8 @@ public class PrePass implements RenderPass{
 
         shadowShader.unbind();
         ctx.shadowMap().unbind(ctx.window().getWidth(), ctx.window().getHeight());
+
+        glDisable(GL_POLYGON_OFFSET_FILL);
         glEnable(GL_CULL_FACE);
     }
 

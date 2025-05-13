@@ -21,7 +21,7 @@ public class World {
     public static final float CYCLE_DURATION_SECONDS = 20 * 60;
 
     @Getter
-    private final WorldClock clock = new WorldClock(CYCLE_DURATION_SECONDS, 0.535f); //0.535
+    private final WorldClock clock = new WorldClock(CYCLE_DURATION_SECONDS, 0.65f); //0.535
     @Getter
     private final WorldInteraction interaction = new WorldInteraction();
 

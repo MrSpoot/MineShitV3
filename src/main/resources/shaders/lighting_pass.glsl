@@ -24,7 +24,13 @@ uniform sampler2D uShadow;
 uniform vec3 uSunDir;
 uniform mat4 uLightSpaceMatrix;
 
-float calculateShadow(vec4 fragPosLightSpace, vec3 normal) {
+float calculateShadow(vec3 position, vec3 normal) {
+    vec3 lightDir = normalize(uSunDir);
+
+    // Décalage vers la lumière (receiver bias)
+    vec3 offsetPos = position + lightDir * 0.01 + normal * 0.001;
+    vec4 fragPosLightSpace = uLightSpaceMatrix * vec4(offsetPos, 1.0);
+
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
 
@@ -34,7 +40,7 @@ float calculateShadow(vec4 fragPosLightSpace, vec3 normal) {
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(uShadow, 0);
 
-    float bias = max(0.001 * (1.0 - dot(normal, -normalize(uSunDir))), 0.0002);
+    float bias = max(0.00015 * (1.0 - dot(normal, -lightDir)), 0.00005);
 
     for (int x = -1; x <= 1; ++x) {
         for (int y = -1; y <= 1; ++y) {
@@ -45,7 +51,6 @@ float calculateShadow(vec4 fragPosLightSpace, vec3 normal) {
     }
 
     shadow /= 9.0;
-
     return shadow;
 }
 
@@ -61,8 +66,7 @@ void main() {
     vec3 position = texture(uPosition, vUV).xyz;
     float ssao = texture(uSSAO, vUV).r;
 
-    vec4 fragPosLightSpace = uLightSpaceMatrix * vec4(position, 1.0);
-    float shadow = calculateShadow(fragPosLightSpace, normal);
+    float shadow = calculateShadow(position, normal);
 
     float sunHeight = clamp(-uSunDir.y, 0.0, 1.0);
     float lightIntensity = smoothstep(0.0, 0.3, sunHeight);
