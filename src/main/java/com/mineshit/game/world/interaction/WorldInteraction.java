@@ -33,11 +33,13 @@ public class WorldInteraction {
             BlockType.STONE,
             BlockType.GLASS,
             BlockType.LEAVE,
-            BlockType.GRASS,
+            BlockType.GRASS_BLOCK,
             BlockType.DIRT,
             BlockType.WOOD_LOG,
             BlockType.PLANK,
-            BlockType.WATER
+            BlockType.WATER,
+            BlockType.GRASS,
+            BlockType.YELLOW_FLOWER
     };
 
     @Getter

@@ -12,6 +12,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
+import java.nio.FloatBuffer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -33,6 +34,10 @@ public class ChunkRenderable {
     private Mesh opaqueMesh;
     private Mesh transparentMesh;
     private Mesh shadowMesh;
+    @Getter
+    private FloatBuffer crossInstanceBuffer;
+    @Getter
+    private int crossInstanceCount;
 
     public ChunkRenderable(Chunk chunk) {
         this.chunk = chunk;
@@ -55,6 +60,16 @@ public class ChunkRenderable {
                 this.opaqueMesh = new Mesh(data.opaqueVertexBuffer(), data.opaqueIndexBuffer(), 7);
                 this.transparentMesh = new Mesh(data.transparentVertexBuffer(), data.transparentIndexBuffer(), 7);
                 this.shadowMesh = new Mesh(data.shadowVertexBuffer(), data.shadowIndexBuffer(), 7);
+
+                if (data.crossInstanceBuffer() != null) {
+                    FloatBuffer src = data.crossInstanceBuffer();
+                    src.rewind();
+                    this.crossInstanceBuffer = MemoryUtil.memAllocFloat(src.remaining());
+                    this.crossInstanceBuffer.put(src);
+                    this.crossInstanceBuffer.flip();
+                    this.crossInstanceCount = data.crossInstanceCount();
+                }
+
                 cleanupMeshDate(data);
 
                 if(chunk.getState() != ChunkState.DIRTY) {
@@ -84,6 +99,15 @@ public class ChunkRenderable {
             this.opaqueMesh = new Mesh(data.opaqueVertexBuffer(), data.opaqueIndexBuffer(), 7);
             this.transparentMesh = new Mesh(data.transparentVertexBuffer(), data.transparentIndexBuffer(), 7);
             this.shadowMesh = new Mesh(data.shadowVertexBuffer(), data.shadowIndexBuffer(), 7);
+
+            if (data.crossInstanceBuffer() != null) {
+                FloatBuffer src = data.crossInstanceBuffer();
+                src.rewind();
+                this.crossInstanceBuffer = MemoryUtil.memAllocFloat(src.remaining());
+                this.crossInstanceBuffer.put(src);
+                this.crossInstanceBuffer.flip();
+                this.crossInstanceCount = data.crossInstanceCount();
+            }
         }
         cleanupMeshDate(data);
         chunk.setState(ChunkState.MESHED);
@@ -159,6 +183,11 @@ public class ChunkRenderable {
         if(opaqueMesh != null) opaqueMesh.cleanup();
         if(transparentMesh != null) transparentMesh.cleanup();
         if(shadowMesh != null) shadowMesh.cleanup();
+        if(crossInstanceBuffer != null) {
+            MemoryUtil.memFree(crossInstanceBuffer);
+            crossInstanceBuffer = null;
+            crossInstanceCount = 0;
+        }
     }
 
     private void cleanupMeshDate(ChunkMeshData data){
@@ -168,6 +197,7 @@ public class ChunkRenderable {
         MemoryUtil.memFree(data.transparentIndexBuffer());
         MemoryUtil.memFree(data.shadowVertexBuffer());
         MemoryUtil.memFree(data.shadowIndexBuffer());
+        MemoryUtil.memFree(data.crossInstanceBuffer());
     }
 
 }

@@ -52,7 +52,7 @@ public class GenerationEngine {
                             case DESERT -> chunk.setBlock(x, y, z, BlockType.SAND);
                             case MOUNTAIN -> chunk.setBlock(x, y, z, BlockType.STONE);
                             case OCEAN -> chunk.setBlock(x, y, z, BlockType.WATER);
-                            case PLAIN -> chunk.setBlock(x, y, z, BlockType.GRASS);
+                            case PLAIN -> chunk.setBlock(x, y, z, BlockType.GRASS_BLOCK);
                         }
                     } else if (globalY >= heightInt - 3) {
                         chunk.setBlock(x, y, z, BlockType.DIRT);
@@ -71,10 +71,15 @@ public class GenerationEngine {
                 int surfaceY = getSurfaceY(chunk, x, z);
                 if (surfaceY == -1) continue;
 
-                if (chunk.getBlock(x, surfaceY, z) == BlockType.GRASS.getId()) {
+                if (chunk.getBlock(x, surfaceY, z) == BlockType.GRASS_BLOCK.getId()) {
                     float chance = treeNoise.GetNoise(globalX, globalZ);
                     if (chance > 0.85f) {
                         tryPlaceTree(chunk, x, surfaceY + 1, z);
+                    }
+
+                    float grassChance = treeNoise.GetNoise(globalX + 1000, globalZ + 1000);
+                    if (grassChance > 0.4f && chunk.isInBounds(x, surfaceY + 1, z) && chunk.getBlock(x, surfaceY + 1, z) == BlockType.AIR.getId()) {
+                        chunk.setBlock(x, surfaceY + 1, z, BlockType.GRASS);
                     }
                 }
             }

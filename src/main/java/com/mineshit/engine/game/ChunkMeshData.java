@@ -17,7 +17,12 @@ public record ChunkMeshData(
 
         FloatBuffer shadowVertexBuffer,
         IntBuffer shadowIndexBuffer,
-        int shadowVertexCount
+        int shadowVertexCount,
+
+        FloatBuffer crossInstanceBuffer,
+        int crossInstanceCount
+
+
 ) {
 
     public boolean hasOpaque() {
@@ -26,6 +31,10 @@ public record ChunkMeshData(
 
     public boolean hasTransparent() {
         return transparentVertexCount > 0;
+    }
+
+    public boolean hasCrossInstances() {
+        return crossInstanceCount > 0;
     }
 
     public boolean canBeAdd() {
