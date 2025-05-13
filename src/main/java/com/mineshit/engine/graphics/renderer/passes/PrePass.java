@@ -6,7 +6,11 @@ import com.mineshit.engine.graphics.renderer.utils.Shader;
 import com.mineshit.engine.graphics.textures.TextureManager;
 import com.mineshit.engine.window.Window;
 import com.mineshit.game.world.utils.ChunkRenderable;
+import org.joml.FrustumIntersection;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
+
+import java.util.List;
 
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL11C.GL_CULL_FACE;
@@ -52,7 +56,7 @@ public class PrePass implements RenderPass{
         shadowShader.setUniform("uTextureArray", 0);
         shadowShader.setUniform("uLightSpaceMatrix", ctx.lightMatrix());
 
-        for (ChunkRenderable renderable : ctx.renderables()) {
+        for (ChunkRenderable renderable : ChunkRenderable.getRenderableChunksFilterByFrustum(ctx.renderables(),ctx.lightMatrix())) {
             renderable.renderShadow(ctx.world(), shadowShader, ctx.lightMatrix());
         }
 

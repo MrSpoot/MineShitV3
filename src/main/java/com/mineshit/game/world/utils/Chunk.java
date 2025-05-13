@@ -2,6 +2,7 @@ package com.mineshit.game.world.utils;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.joml.Vector3f;
 import org.joml.Vector3i;
 
 import java.util.ArrayList;
@@ -142,6 +143,22 @@ public class Chunk {
         return x >= 0 && x < SIZE &&
                 y >= 0 && y < SIZE &&
                 z >= 0 && z < SIZE;
+    }
+
+    public Vector3f getWorldMin() {
+        return new Vector3f(
+                position.x * SIZE,
+                position.y * SIZE,
+                position.z * SIZE
+        );
+    }
+
+    public Vector3f getWorldMax() {
+        return new Vector3f(
+                (position.x + 1) * SIZE,
+                (position.y + 1) * SIZE,
+                (position.z + 1) * SIZE
+        );
     }
 
     // --- Internal ---
