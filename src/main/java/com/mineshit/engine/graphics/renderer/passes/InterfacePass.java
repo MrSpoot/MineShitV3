@@ -117,18 +117,18 @@ public class InterfacePass implements RenderPass {
 
     @Override
     public void render(RenderContext ctx){
-        renderSelection(ctx);
+            renderSelection(ctx);
 
-        nvgBeginFrame(vg, ctx.window().getWidth(), ctx.window().getHeight(), 1);
+            nvgBeginFrame(vg, ctx.window().getWidth(), ctx.window().getHeight(), 1);
 
-        drawCrosshair(ctx.window().getWidth(), ctx.window().getHeight());
-        renderStats(ctx.window().getWidth(), ctx.window().getHeight());
+            drawCrosshair(ctx.window().getWidth(), ctx.window().getHeight());
+            renderStats(ctx.window().getWidth(), ctx.window().getHeight());
 
-        nvgEndFrame(vg);
+            nvgEndFrame(vg);
 
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
+            glEnable(GL_DEPTH_TEST);
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
     }
 
     private void renderSelection(RenderContext ctx) {

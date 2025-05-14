@@ -1,6 +1,7 @@
 package com.mineshit.engine.graphics.renderer;
 
 import com.mineshit.engine.graphics.Camera;
+import com.mineshit.engine.graphics.renderer.passes.InterfacePass;
 import com.mineshit.engine.graphics.renderer.passes.RenderPass;
 import com.mineshit.engine.graphics.renderer.utils.*;
 import com.mineshit.engine.input.InputManager;
@@ -11,6 +12,7 @@ import com.mineshit.game.world.utils.ChunkRenderable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.*;
 
@@ -24,6 +26,11 @@ public class Pipeline {
     private LightingMap lightingMap;
     private SkyboxMap skyboxMap;
     private GBuffer gbuffer;
+
+    //TODO TEMPORARY
+    private boolean showInterface = true;
+    private double lastToggleTime = 0;
+    private static final double TOGGLE_COOLDOWN = 0.2; // en secondes
 
     public void init(Window window) {
 
@@ -57,6 +64,13 @@ public class Pipeline {
             skyboxMap= new SkyboxMap(window.getWidth(), window.getHeight());
         }
 
+        double currentTime = System.nanoTime() / 1e9; // en secondes
+        if (input.isKeyDown(GLFW_KEY_F1) && (currentTime - lastToggleTime) > TOGGLE_COOLDOWN) {
+            showInterface = !showInterface;
+            lastToggleTime = currentTime;
+        }
+
+
         world.getInteraction().update(player, input, world, camera);
         updateLightSpaceMatrix(player.getPosition(),world.getClock().getSunDirection());
 
@@ -65,6 +79,11 @@ public class Pipeline {
         RenderContext ctx = new RenderContext(window,world,camera, player, lightSpaceMatrix,renderables.values(),gbuffer, shadowMap,ssaoMap,lightingMap,skyboxMap);
 
         for (RenderPass pass : passes) {
+            if(pass instanceof InterfacePass){
+                if(!showInterface) {
+                    continue;
+                }
+            }
             pass.render(ctx);
         }
     }

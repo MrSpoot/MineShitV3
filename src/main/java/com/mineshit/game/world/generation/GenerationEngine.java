@@ -4,6 +4,8 @@ import com.mineshit.game.utils.FastNoiseLite;
 import com.mineshit.game.world.utils.BlockType;
 import com.mineshit.game.world.utils.Chunk;
 
+import static java.lang.Math.pow;
+
 public class GenerationEngine {
 
     private static final long SEED = 1;
@@ -72,18 +74,36 @@ public class GenerationEngine {
                 if (surfaceY == -1) continue;
 
                 if (chunk.getBlock(x, surfaceY, z) == BlockType.GRASS_BLOCK.getId()) {
-                    float chance = treeNoise.GetNoise(globalX, globalZ);
-                    if (chance > 0.85f) {
+                    if (shouldPlace(treeNoise.GetNoise(globalX, globalZ), globalX, globalZ, 0.5f, 2.0f)) {
                         tryPlaceTree(chunk, x, surfaceY + 1, z);
                     }
-
-                    float grassChance = treeNoise.GetNoise(globalX + 1000, globalZ + 1000);
-                    if (grassChance > 0.4f && chunk.isInBounds(x, surfaceY + 1, z) && chunk.getBlock(x, surfaceY + 1, z) == BlockType.AIR.getId()) {
+                    else if (shouldPlace(treeNoise.GetNoise(globalX + 2000, globalZ + 2000), globalX, globalZ, 0.65f, 1.5f)) {
                         chunk.setBlock(x, surfaceY + 1, z, BlockType.GRASS);
+                    }
+                    else if (shouldPlace(treeNoise.GetNoise(globalX + 3500, globalZ + 3500), globalX, globalZ, 0.85f, 2.0f)){
+                        chunk.setBlock(x, surfaceY + 1, z, BlockType.YELLOW_FLOWER);
                     }
                 }
             }
         }
+    }
+
+    private static boolean shouldPlace(float noiseValue, int globalX, int globalZ, float rarity, float steepness) {
+        float adjusted = noiseValue * 0.2f + 0.2f;
+        adjusted = (float) Math.pow(adjusted, steepness);
+        float random = randomValueBasedOnBlock(globalX, globalZ) * rarity;
+        return adjusted > random;
+    }
+
+
+    private static float hash2D(int x, int z) {
+        int h = x * 374761393 + z * 668265263; // large primes
+        h = (h ^ (h >> 13)) * 1274126177;
+        return ((h ^ (h >> 16)) & 0x7fffffff) / (float) Integer.MAX_VALUE;
+    }
+
+    private static float randomValueBasedOnBlock(int x, int z) {
+        return hash2D(x, z);
     }
 
     private static int getSurfaceY(Chunk chunk, int x, int z) {
