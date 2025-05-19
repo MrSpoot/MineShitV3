@@ -35,6 +35,7 @@ public class Mesh {
         // Vertex Attributes
         int stride = vertexSize * Float.BYTES;
 
+        //TODO Compress data sent to GPU
         glEnableVertexAttribArray(0); // aPos
         glVertexAttribPointer(0, 3, GL_FLOAT, false, stride, 0);
 
@@ -56,6 +57,7 @@ public class Mesh {
             glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0);
             glBindVertexArray(0);
             Statistic.increment("Drawcalls");
+            Statistic.add("Triangles", vertexCount / 3);
         }
     }
 

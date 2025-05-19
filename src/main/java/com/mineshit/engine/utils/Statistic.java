@@ -29,6 +29,15 @@ public class Statistic {
         }
     }
 
+    public static void add(String key, int val) {
+        Object value = stats.getOrDefault(key, 0L);
+        if (value instanceof Long l) {
+            stats.put(key, l + val);
+        } else {
+            throw new IllegalArgumentException("Cannot add non-long stat: " + key);
+        }
+    }
+
     public static void reset(String key) {
         stats.remove(key);
     }

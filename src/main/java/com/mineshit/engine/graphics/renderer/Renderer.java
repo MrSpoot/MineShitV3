@@ -40,6 +40,7 @@ public class Renderer {
         pipeline.render(window,input,world,camera, playerController);
 
         Statistic.set("Drawcalls",0L);
+        Statistic.set("Triangles",0L);
     }
 
     public void cleanup() {

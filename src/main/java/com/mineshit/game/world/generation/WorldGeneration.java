@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
 
 public class WorldGeneration {
 
-    private static final int RENDER_DISTANCE = 8;
+    private static final int RENDER_DISTANCE = 16;
 
     private final ExecutorService executor = Executors.newFixedThreadPool(1);
     private final Queue<Chunk> generatedChunks = new ConcurrentLinkedQueue<>();

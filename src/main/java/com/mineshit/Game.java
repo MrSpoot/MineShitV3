@@ -48,7 +48,7 @@ public class Game {
     private void init() {
         LOGGER.info("Initializing");
 
-        window = new Window("MineShit", 1280, 720 );
+        window = new Window("MineShit", 1920, 1080 );
         window.create();
 
         camera = new Camera(70f, window.aspectRatio());
