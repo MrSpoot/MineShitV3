@@ -38,5 +38,27 @@ public enum FaceDirection {
         };
     }
 
+    public int axisW() {
+        if (offsetX != 0) return 0;
+        if (offsetY != 0) return 1;
+        return 2;
+    }
+
+    public int axisU() {
+        return switch (this) {
+            case TOP, BOTTOM -> 0;   // X
+            case FRONT, BACK -> 0;   // X
+            case LEFT, RIGHT -> 2;   // Z
+        };
+    }
+
+    public int axisV() {
+        return switch (this) {
+            case TOP, BOTTOM -> 2;   // Z
+            case FRONT, BACK -> 1;   // Y
+            case LEFT, RIGHT -> 1;   // Y
+        };
+    }
+
 }
 

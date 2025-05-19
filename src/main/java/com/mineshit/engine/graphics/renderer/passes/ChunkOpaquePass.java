@@ -16,6 +16,7 @@ import java.nio.FloatBuffer;
 import java.util.Collection;
 import java.util.List;
 
+import static org.lwjgl.opengl.GL11.glRenderMode;
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL15C.*;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
@@ -95,6 +96,8 @@ public class ChunkOpaquePass implements RenderPass {
             }
         }
 
+        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
         crossInstances.flip();
 
         crossShader.useProgram();
@@ -124,6 +127,8 @@ public class ChunkOpaquePass implements RenderPass {
         MemoryUtil.memFree(crossInstances);
 
         glEnable(GL_CULL_FACE);
+
+        glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
         crossShader.unbind();
     }

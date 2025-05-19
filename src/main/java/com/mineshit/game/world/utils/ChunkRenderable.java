@@ -1,6 +1,7 @@
 package com.mineshit.game.world.utils;
 
 import com.mineshit.engine.game.ChunkMeshBuilder;
+import com.mineshit.engine.game.ChunkMeshBuilderGreedy;
 import com.mineshit.engine.game.ChunkMeshData;
 import com.mineshit.engine.graphics.renderer.utils.Mesh;
 import com.mineshit.engine.graphics.renderer.utils.Shader;
@@ -48,7 +49,8 @@ public class ChunkRenderable {
             chunk.setState(ChunkState.MESHING);
 
             Map<FaceDirection, Chunk> neighbors = world.getNeighborChunks(chunk.getPosition());
-            pendingMesh = meshingExecutor.submit(() -> ChunkMeshBuilder.buildBuffers(chunk, neighbors));
+            //pendingMesh = meshingExecutor.submit(() -> ChunkMeshBuilder.buildBuffers(chunk, neighbors));
+            pendingMesh = meshingExecutor.submit(() -> ChunkMeshBuilderGreedy.buildBuffers(chunk, neighbors));
         }
 
         if (pendingMesh != null && pendingMesh.isDone()) {
@@ -92,7 +94,7 @@ public class ChunkRenderable {
         chunk.setState(ChunkState.MESHING);
 
         Map<FaceDirection, Chunk> neighbors = world.getNeighborChunks(chunk.getPosition());
-        ChunkMeshData data = ChunkMeshBuilder.buildBuffers(chunk, neighbors);
+        ChunkMeshData data = ChunkMeshBuilderGreedy.buildBuffers(chunk, neighbors);
 
         if (data.canBeAdd()) {
             cleanupMesh();
