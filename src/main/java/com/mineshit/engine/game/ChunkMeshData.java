@@ -29,6 +29,10 @@ public record ChunkMeshData(
         return opaqueVertexCount > 0;
     }
 
+    public boolean hasShadow() {
+        return shadowVertexCount > 0;
+    }
+
     public boolean hasTransparent() {
         return transparentVertexCount > 0;
     }

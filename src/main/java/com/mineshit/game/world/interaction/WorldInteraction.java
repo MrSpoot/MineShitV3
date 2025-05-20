@@ -39,7 +39,8 @@ public class WorldInteraction {
             BlockType.PLANK,
             BlockType.WATER,
             BlockType.GRASS,
-            BlockType.YELLOW_FLOWER
+            BlockType.YELLOW_FLOWER,
+            BlockType.TEST
     };
 
     @Getter

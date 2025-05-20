@@ -48,6 +48,12 @@ public class Mesh {
         glEnableVertexAttribArray(3); // aFaceIndex
         glVertexAttribPointer(3, 1, GL_FLOAT, false, stride, 6 * Float.BYTES);
 
+        glEnableVertexAttribArray(4); // aFaceSizeU
+        glVertexAttribPointer(4, 1, GL_FLOAT, false, stride, 7 * Float.BYTES);
+
+        glEnableVertexAttribArray(5); // aFaceSizeV
+        glVertexAttribPointer(5, 1, GL_FLOAT, false, stride, 8 * Float.BYTES);
+
         glBindVertexArray(0);
     }
 

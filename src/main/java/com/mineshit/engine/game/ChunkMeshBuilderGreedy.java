@@ -19,7 +19,7 @@ public class ChunkMeshBuilderGreedy {
     };
 
     public static ChunkMeshData buildBuffers(Chunk chunk, Map<FaceDirection, Chunk> neighbors) {
-        FloatBuffer vertexBuffer = memAllocFloat(Chunk.SIZE * Chunk.SIZE * Chunk.SIZE * 4 * 7);
+        FloatBuffer vertexBuffer = memAllocFloat(Chunk.SIZE * Chunk.SIZE * Chunk.SIZE * 4 * 9);
         IntBuffer indexBuffer = memAllocInt(Chunk.SIZE * Chunk.SIZE * Chunk.SIZE * 6);
         int vertexOffset = 0;
 
@@ -113,52 +113,54 @@ public class ChunkMeshBuilderGreedy {
         return vertexOffsetStart;
     }
 
-    private static int emitQuad(int u, int v, int w, int h, int depth,
+    private static int emitQuad(int u, int v, int width, int height, int depth,
                                 FaceDirection face, short blockId,
                                 FloatBuffer vbo, IntBuffer ibo, int vertexOffset) {
 
-        float wF = w;
-        float hF = h;
+        float wF = width;
+        float hF = height;
         float d = depth;
 
         float[][] corners = switch (face) {
             case FRONT -> new float[][] {
-                    {u,     v,     d + 1},
-                    {u + wF, v,     d + 1},
-                    {u + wF, v + hF, d + 1},
-                    {u,     v + hF, d + 1}
+                    {u,       v,       d + 1},
+                    {u + wF,  v,       d + 1},
+                    {u + wF,  v + hF,  d + 1},
+                    {u,       v + hF,  d + 1}
             };
             case BACK -> new float[][] {
-                    {u + wF, v,     d},
-                    {u,     v,     d},
-                    {u,     v + hF, d},
-                    {u + wF, v + hF, d}
+                    {u + wF,  v,       d},
+                    {u,       v,       d},
+                    {u,       v + hF,  d},
+                    {u + wF,  v + hF,  d}
             };
             case LEFT -> new float[][] {
-                    {d + 1,     v,     u + wF},
-                    {d + 1,     v,     u},
-                    {d + 1,     v + hF, u},
-                    {d + 1 ,     v + hF, u + wF}
+                    {d,       v,       u},
+                    {d,       v,       u + wF},
+                    {d,       v + hF,  u + wF},
+                    {d,       v + hF,  u}
             };
             case RIGHT -> new float[][] {
-                    {d, v,     u},
-                    {d, v,     u + wF},
-                    {d, v + hF, u + wF},
-                    {d, v + hF, u}
+                    {d + 1,   v,       u + wF},
+                    {d + 1,   v,       u},
+                    {d + 1,   v + hF,  u},
+                    {d + 1,   v + hF,  u + wF}
             };
             case BOTTOM -> new float[][] {
-                    {u,     d,     v},
-                    {u + wF, d,     v},
-                    {u + wF, d,     v + hF},
-                    {u,     d,     v + hF}
+                    {u,       d,       v},
+                    {u + wF,  d,       v},
+                    {u + wF,  d,       v + hF},
+                    {u,       d,       v + hF}
             };
             case TOP -> new float[][] {
-                    {u,     d + 1, v + hF},
-                    {u + wF, d + 1, v + hF},
-                    {u + wF, d + 1, v},
-                    {u,     d + 1, v}
+                    {u,       d + 1,   v + hF},
+                    {u + wF,  d + 1,   v + hF},
+                    {u + wF,  d + 1,   v},
+                    {u,       d + 1,   v}
             };
         };
+
+        int[] indices = new int[] {0, 1, 2, 2, 3, 0};
 
         for (int i = 0; i < 4; i++) {
             vbo.put(corners[i][0]);
@@ -168,17 +170,17 @@ public class ChunkMeshBuilderGreedy {
             vbo.put(UVS[i][1]);
             vbo.put(blockId);
             vbo.put(getFaceId(face));
+            vbo.put(width);
+            vbo.put(height);
         }
 
-        ibo.put(vertexOffset);
-        ibo.put(vertexOffset + 1);
-        ibo.put(vertexOffset + 2);
-        ibo.put(vertexOffset + 2);
-        ibo.put(vertexOffset + 3);
-        ibo.put(vertexOffset);
+        for (int i = 0; i < 6; i++) {
+            ibo.put(vertexOffset + indices[i]);
+        }
 
         return vertexOffset + 4;
     }
+
 
     private static int getFaceId(FaceDirection face) {
         return switch (face) {

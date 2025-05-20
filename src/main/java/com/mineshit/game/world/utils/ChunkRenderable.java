@@ -59,9 +59,9 @@ public class ChunkRenderable {
               
                 cleanupMesh();
 
-                this.opaqueMesh = new Mesh(data.opaqueVertexBuffer(), data.opaqueIndexBuffer(), 7);
-                this.transparentMesh = new Mesh(data.transparentVertexBuffer(), data.transparentIndexBuffer(), 7);
-                this.shadowMesh = new Mesh(data.shadowVertexBuffer(), data.shadowIndexBuffer(), 7);
+                this.opaqueMesh = new Mesh(data.opaqueVertexBuffer(), data.opaqueIndexBuffer(), 9);
+                this.transparentMesh = new Mesh(data.transparentVertexBuffer(), data.transparentIndexBuffer(), 9);
+                this.shadowMesh = new Mesh(data.shadowVertexBuffer(), data.shadowIndexBuffer(), 9);
 
                 if (data.crossInstanceBuffer() != null) {
                     FloatBuffer src = data.crossInstanceBuffer();
@@ -98,9 +98,9 @@ public class ChunkRenderable {
 
         if (data.canBeAdd()) {
             cleanupMesh();
-            this.opaqueMesh = new Mesh(data.opaqueVertexBuffer(), data.opaqueIndexBuffer(), 7);
-            this.transparentMesh = new Mesh(data.transparentVertexBuffer(), data.transparentIndexBuffer(), 7);
-            this.shadowMesh = new Mesh(data.shadowVertexBuffer(), data.shadowIndexBuffer(), 7);
+            this.opaqueMesh = new Mesh(data.opaqueVertexBuffer(), data.opaqueIndexBuffer(), 9);
+            this.transparentMesh = new Mesh(data.transparentVertexBuffer(), data.transparentIndexBuffer(), 9);
+            this.shadowMesh = new Mesh(data.shadowVertexBuffer(), data.shadowIndexBuffer(), 9);
 
             if (data.crossInstanceBuffer() != null) {
                 FloatBuffer src = data.crossInstanceBuffer();

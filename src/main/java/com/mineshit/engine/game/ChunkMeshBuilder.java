@@ -30,16 +30,16 @@ public class ChunkMeshBuilder {
         LOGGER.trace("Building Mesh");
 
         int maxFaces = Chunk.SIZE * Chunk.SIZE * Chunk.SIZE * 6;
-        FloatBuffer opaqueVertexBuffer = memAllocFloat(maxFaces * 4 * 7); // 7 floats per vertex now (added faceId)
+        FloatBuffer opaqueVertexBuffer = memAllocFloat(maxFaces * 4 * 9);
         IntBuffer opaqueIndexBuffer = memAllocInt(maxFaces * 6);
 
-        FloatBuffer transparentVertexBuffer = memAllocFloat(maxFaces * 4 * 7); // 7 floats per vertex now (added faceId)
+        FloatBuffer transparentVertexBuffer = memAllocFloat(maxFaces * 4 * 9);
         IntBuffer transparentIndexBuffer = memAllocInt(maxFaces * 6);
 
-        FloatBuffer shadowVertexBuffer = memAllocFloat(maxFaces * 4 * 7); // 7 floats per vertex now (added faceId)
+        FloatBuffer shadowVertexBuffer = memAllocFloat(maxFaces * 4 * 9);
         IntBuffer shadowIndexBuffer = memAllocInt(maxFaces * 6);
 
-        FloatBuffer crossInstanceBuffer = memAllocFloat(Chunk.SIZE * Chunk.SIZE * Chunk.SIZE * 4); // position.xyz + texture index
+        FloatBuffer crossInstanceBuffer = memAllocFloat(Chunk.SIZE * Chunk.SIZE * Chunk.SIZE * 4);
         int crossInstanceCount = 0;
 
         int opaqueIndexOffset = 0;
