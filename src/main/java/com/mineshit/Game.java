@@ -2,7 +2,9 @@ package com.mineshit;
 
 import com.mineshit.engine.core.Timer;
 import com.mineshit.engine.graphics.Camera;
+import com.mineshit.engine.graphics.renderer.Pipeline;
 import com.mineshit.engine.graphics.renderer.Renderer;
+import com.mineshit.engine.graphics.renderer.passes.DebugPass;
 import com.mineshit.engine.graphics.textures.TextureManager;
 import com.mineshit.engine.input.InputManager;
 import com.mineshit.engine.utils.Statistic;
@@ -37,6 +39,9 @@ public class Game {
 
     private int frameCount = 0;
     private double lastFpsTime = 0;
+
+    private boolean canToggleDebug = true;
+    private boolean canSwitchRenderMode = true;
 
 
     public void run() {
@@ -112,6 +117,24 @@ public class Game {
 
         if(input.isKeyDown(GLFW_KEY_Y)) world.getClock().pause();
         if(input.isKeyDown(GLFW_KEY_U)) world.getClock().resume();
+
+        if (input.isKeyDown(GLFW_KEY_O)) {
+            if (canToggleDebug) {
+                Pipeline.renderDebug = !Pipeline.renderDebug;
+                canToggleDebug = false;
+            }
+        } else {
+            canToggleDebug = true;
+        }
+
+        if (input.isKeyDown(GLFW_KEY_L)) {
+            if (canSwitchRenderMode) {
+                DebugPass.nextRenderMode();
+                canSwitchRenderMode = false;
+            }
+        } else {
+            canSwitchRenderMode = true;
+        }
 
 
         Statistic.set("Camera Position","X : "+String.format("%.1f",camera.getPosition().x)+" | Y : "+String.format("%.1f",camera.getPosition().y)+" | Z : "+String.format("%.1f",camera.getPosition().z));

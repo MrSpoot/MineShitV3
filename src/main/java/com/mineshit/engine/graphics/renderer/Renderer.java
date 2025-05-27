@@ -27,6 +27,7 @@ public class Renderer {
         pipeline.addPass(new LightingPass());
         pipeline.addPass(new SkyBoxPass());
         pipeline.addPass(new CompositePass());
+        pipeline.addPass(new DebugPass());
         pipeline.addPass(new ChunkTransparentPass());
         pipeline.addPass(new InterfacePass());
 

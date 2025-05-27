@@ -1,8 +1,7 @@
 package com.mineshit.engine.graphics.renderer;
 
 import com.mineshit.engine.graphics.Camera;
-import com.mineshit.engine.graphics.renderer.passes.InterfacePass;
-import com.mineshit.engine.graphics.renderer.passes.RenderPass;
+import com.mineshit.engine.graphics.renderer.passes.*;
 import com.mineshit.engine.graphics.renderer.utils.*;
 import com.mineshit.engine.input.InputManager;
 import com.mineshit.engine.window.Window;
@@ -31,6 +30,8 @@ public class Pipeline {
     private boolean showInterface = true;
     private double lastToggleTime = 0;
     private static final double TOGGLE_COOLDOWN = 0.2; // en secondes
+
+    public static boolean renderDebug = false;
 
     public void init(Window window) {
 
@@ -81,6 +82,21 @@ public class Pipeline {
         for (RenderPass pass : passes) {
             if(pass instanceof InterfacePass){
                 if(!showInterface) {
+                    continue;
+                }
+            }
+            if(pass instanceof CompositePass){
+                if(renderDebug) {
+                    continue;
+                }
+            }
+            if(pass instanceof ChunkTransparentPass){
+                if(renderDebug) {
+                    continue;
+                }
+            }
+            if(pass instanceof DebugPass){
+                if(!renderDebug) {
                     continue;
                 }
             }
